@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Info_test</title>
+  <style>
+    body {
+      background-color: #001f3f;
+      color: #a3c4f3;
+      font-family: 'Share Tech Mono', monospace;
+      margin: 0;
+      padding: 2rem 1rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #80d8ff;
+      margin-bottom: 1rem;
+    }
+
+    pre {
+      background: #002a4d;
+      border: 1.5px solid #0074d9;
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 720px;
+      width: 100%;
+      font-size: 1rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      box-shadow: 0 0 15px #0074d988, inset 0 0 30px #0074d944;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: #89c3ff;
+      text-align: center;
+    }
+
+    footer a {
+      color: #55aaff;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      pre {
+        font-size: 0.95rem;
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Device info</h1>
+  <pre id="info">取得中...</pre>
+
+  <footer>
+    © 2025 <a href="https://test.hamusata.f5.si" target="_blank" rel="noopener">test.hamusata.f5.si</a><br />
+    使用ライブラリ: <a href="https://api.ipify.org" target="_blank" rel="noopener">ipify API</a>, JavaScript Web API<br />
+    表示される情報は一部、正確でない可能性があります。
+  </footer>
+
+<script>
+  function detectOS() {
+    const ua = navigator.userAgent;
+    if (/Android/.test(ua)) {
+      const version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || "不明";
+      const model = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || "不明端末";
+      return { name: "Android", version, device: model };
+    }
+    if (/iPhone|iPad|iPod/.test(ua)) {
+      const version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || "不明";
+      const model = /iPhone/.test(ua) ? "iPhone" : "iPad";
+      return { name: model === "iPhone" ? "iOS" : "iPadOS", version, device: model };
+    }
+    if (/Windows NT/.test(ua)) {
+      const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
+      const map = {
+        "10.0": "10 / 11", "6.3": "8.1", "6.2": "8", "6.1": "7", "6.0": "Vista", "5.1": "XP"
+      };
+      return { name: "Windows", version: map[ver] || ver, device: "PC" };
+    }
+    if (/Mac OS X/.test(ua)) {
+      const version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || "不明";
+      return { name: "macOS", version, device: "Mac" };
+    }
+    if (/Linux/.test(navigator.platform)) {
+      return { name: "Linux", version: "不明", device: "Linux端末" };
+    }
+    return { name: "不明", version: "不明", device: "不明" };
+  }
+
+  function getBrowser() {
+    const ua = navigator.userAgent;
+    if (/Edg\//.test(ua)) return "Microsoft Edge";
+    if (/OPR\//.test(ua)) return "Opera";
+    if (/Chrome\//.test(ua)) return "Chrome";
+    if (/Firefox\//.test(ua)) return "Firefox";
+    if (/Safari/.test(ua) && !/Chrome/.test(ua)) return "Safari";
+    return "不明";
+  }
+
+  function getDisplayInfo() {
+    return {
+      screen: `${screen.width} x ${screen.height}`,
+      viewport: `${window.innerWidth} x ${window.innerHeight}`,
+      colorDepth: screen.colorDepth,
+      pixelDepth: screen.pixelDepth
+    };
+  }
+
+  function getCPU() {
+    return navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} コア` : "不明";
+  }
+
+  function getMemory() {
+    return navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "不明";
+  }
+
+  async function getIP() {
+    try {
+      const res = await fetch("/cdn-cgi/trace");
+      const text = await res.text();
+      const ip = text.match(/ip=([^\n]+)/)?.[1] || "不明";
+      return ip;
+    } catch {
+      return "取得失敗";
+    }
+  }
+
+  async function getIPv4() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip || "不明";
+    } catch {
+      return "取得失敗";
+    }
+  }
+
+  function getTimezone() {
+    const now = new Date();
+    const offset = -now.getTimezoneOffset() / 60;
+    return `UTC${offset >= 0 ? "+" : ""}${offset}`;
+  }
+
+  async function updateInfo() {
+    const infoEl = document.getElementById("info");
+    if (!infoEl) return;
+
+    const os = detectOS();
+    const browser = getBrowser();
+    const display = getDisplayInfo();
+    const ip = await getIP();
+    const ipv4 = await getIPv4();
+    const fetchedAt = new Date();
+    const timezone = getTimezone();
+
+    function render() {
+      const now = new Date();
+      infoEl.textContent = `
+■ OS 情報
+  OS名      : ${os.name}
+  バージョン: ${os.version}
+  端末名    : ${os.device}
+
+■ ブラウザ情報
+  ブラウザ  : ${browser}
+  ユーザーエージェント: ${navigator.userAgent}
+
+■ 表示・システム情報
+  解像度      : ${display.screen}
+  ビューポート: ${display.viewport}
+  色深度      : ${display.colorDepth}
+  ピクセル深度: ${display.pixelDepth}
+  CPU         : ${getCPU()}
+  メモリ      : ${getMemory()}
+
+■ ネットワーク
+  IPアドレス : ${ip}
+  IPv4       : ${ipv4}
+  オンライン : ${navigator.onLine ? "オンライン" : "オフライン"}
+
+■ 日時
+  取得時刻   : ${fetchedAt.toLocaleString()}
+  現在時刻   : ${now.toLocaleString()}
+  タイムゾーン: ${timezone}
+      `.trim();
+    }
+
+    render();
+    setInterval(render, 1000);
+  }
+
+  function waitUntilAvailable(retry = 0) {
+    const el = document.getElementById("info");
+    if (el) {
+      updateInfo();
+    } else if (retry < 20) {
+      setTimeout(() => waitUntilAvailable(retry + 1), 500);
+    }
+  }
+
+  waitUntilAvailable();
+</script>
+</body>
+</html>
