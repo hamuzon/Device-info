@@ -92,6 +92,16 @@
       margin-bottom: 2rem;
       table-layout: fixed;
       word-wrap: break-word;
+      background: #121c33;
+      color: var(--text-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    }
+    body.light table {
+      background: #f9f9f9;
+      color: var(--text-light);
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
     th, td {
       padding: 0.6rem 1rem;
@@ -101,12 +111,18 @@
       vertical-align: top;
     }
     body.light th, body.light td {
-      border-color: #888;
+      border-color: #ccc;
     }
     th {
       font-weight: bold;
       width: 35%;
       user-select: none;
+      background: rgba(0, 116, 217, 0.3);
+      color: white;
+    }
+    body.light th {
+      background: rgba(26, 95, 255, 0.3);
+      color: #003366;
     }
     tr {
       animation: fadeIn 0.4s ease-in-out;
@@ -121,6 +137,7 @@
       margin-top: auto;
       padding-top: 1rem;
       user-select: none;
+      color: #888;
     }
     footer a {
       color: inherit;
@@ -152,10 +169,10 @@
   <h1 id="title">Device-info</h1>
 
   <div class="controls" role="group" aria-label="Language and Mode Switch">
-    <button id="btn-ja" class="active" aria-pressed="true" type="button">日本語</button>
-    <button id="btn-en" aria-pressed="false" type="button">English</button>
-    <button id="btn-light" aria-pressed="false" type="button">ライト</button>
-    <button id="btn-dark" class="active" aria-pressed="true" type="button">ダーク</button>
+    <button id="btn-ja" type="button" aria-pressed="true" class="active">日本語</button>
+    <button id="btn-en" type="button" aria-pressed="false">English</button>
+    <button id="btn-light" type="button" aria-pressed="false">ライト</button>
+    <button id="btn-dark" type="button" aria-pressed="true" class="active">ダーク</button>
   </div>
 
   <table id="info" role="table" aria-label="Device Information"></table>
@@ -218,9 +235,10 @@
         }
       };
 
-      // 設定保存＆復元
+      // ローカル保存復元
       let currentLang = localStorage.getItem("lang") || "ja";
-      let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      let darkMode = localStorage.getItem("mode") === "dark" || 
+        (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
       const table = document.getElementById('info');
       const favicon = document.getElementById('favicon');
@@ -231,6 +249,7 @@
       const titleEl = document.getElementById('title');
       const headerEl = document.getElementById('header-info');
 
+      // OS検出
       function detectOS() {
         const ua = navigator.userAgent;
         if (/Android/.test(ua)) {
@@ -265,6 +284,7 @@
         return { name: dict[currentLang].unknown, version: dict[currentLang].unknown, device: dict[currentLang].unknown };
       }
 
+      // ブラウザ検出
       function getBrowser() {
         const ua = navigator.userAgent;
         if (/Edg\//.test(ua)) return "Microsoft Edge";
@@ -275,12 +295,14 @@
         return dict[currentLang].unknown;
       }
 
+      // 表作成補助
       function createRow(label, value) {
         const row = document.createElement('tr');
         row.innerHTML = `<th scope="row">${label}</th><td>${value}</td>`;
         return row;
       }
 
+      // IP取得(ipify API)
       async function fetchIPData() {
         const ipv4 = await fetch('https://api.ipify.org?format=json')
           .then(res => res.json())
@@ -292,12 +314,11 @@
           .then(data => data.ip || dict[currentLang].unknown)
           .catch(() => dict[currentLang].unknown);
 
-        // 現在IPはIPv6優先で、なければIPv4を使用
         const currentIP = ipv6 && ipv6 !== dict[currentLang].unknown ? ipv6 : ipv4;
-
         return { ipv4, ipv6, currentIP };
       }
 
+      // 情報更新
       async function updateInfo() {
         const lang = dict[currentLang];
         table.innerHTML = '';
@@ -308,19 +329,15 @@
         const { ipv4, ipv6, currentIP } = await fetchIPData();
 
         const cpuCores = navigator.hardwareConcurrency || lang.unknown;
-
-        // メモリ情報の強化表示（整数ならそのまま、小数なら1桁表示）
         const rawMemory = navigator.deviceMemory;
-        const memory =
-          typeof rawMemory === 'number' && rawMemory > 0
-            ? `${rawMemory % 1 === 0 ? rawMemory : rawMemory.toFixed(1)} GB`
-            : lang.unknown;
+        const memory = (typeof rawMemory === 'number' && rawMemory > 0)
+          ? `${rawMemory % 1 === 0 ? rawMemory : rawMemory.toFixed(1)} GB`
+          : lang.unknown;
 
         const screenRes = `${screen.width} x ${screen.height}`;
         const viewport = `${window.innerWidth} x ${window.innerHeight}`;
         const colorDepth = screen.colorDepth;
         const pixelDepth = screen.pixelDepth;
-
         const fetchedAt = new Date();
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || lang.unknown;
         const onlineStatus = navigator.onLine ? lang.online_yes : lang.online_no;
@@ -353,6 +370,7 @@
         headerEl.innerHTML = `IPv4: ipify (https://api.ipify.org) | IPv6: ipify (https://api64.ipify.org) | 現在IP: ${currentIP}<br>使用ライブラリ: ipify API, JavaScript Web API`;
       }
 
+      // 現在時刻更新
       function updateCurrentTime() {
         const nowStr = new Date().toLocaleString();
         const rows = table.querySelectorAll('tr');
@@ -364,6 +382,7 @@
         }
       }
 
+      // 言語設定変更
       function setLang(lang) {
         currentLang = lang;
         localStorage.setItem("lang", lang);
@@ -375,6 +394,7 @@
         updateInfo();
       }
 
+      // モード切替
       function setMode(isDark) {
         darkMode = isDark;
         localStorage.setItem("mode", isDark ? "dark" : "light");
@@ -386,15 +406,17 @@
         favicon.href = isDark ? 'icon-dark.png' : 'icon-light.png';
       }
 
+      // イベントリスナー
       btnJa.addEventListener('click', () => setLang('ja'));
       btnEn.addEventListener('click', () => setLang('en'));
       btnLight.addEventListener('click', () => setMode(false));
       btnDark.addEventListener('click', () => setMode(true));
 
+      // 初期設定実行
       setMode(darkMode);
       setLang(currentLang);
 
-      // 現在時刻は1秒ごとに更新
+      // 時刻は1秒毎更新
       setInterval(updateCurrentTime, 1000);
     })();
   </script>
