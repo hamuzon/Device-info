@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Device Info</title>
+  <title>Device-info</title>
   <link id="favicon" rel="icon" type="image/png" href="icon-dark.png" />
   <style>
     :root {
@@ -15,7 +15,6 @@
       --accent-light: #1a5fff;
       --font-mono: 'Share Tech Mono', monospace;
     }
-
     body {
       margin: 0;
       font-family: var(--font-mono);
@@ -32,14 +31,12 @@
       background-color: var(--bg-light);
       color: var(--text-light);
     }
-
     h1 {
       margin-bottom: 1rem;
       font-size: 1.8rem;
       text-align: center;
       user-select: none;
     }
-
     .controls {
       display: flex;
       gap: 0.5rem;
@@ -69,7 +66,6 @@
     body.light .controls button.active {
       background: var(--accent-light);
     }
-
     table {
       width: 100%;
       max-width: 700px;
@@ -93,7 +89,6 @@
       width: 35%;
       user-select: none;
     }
-
     footer {
       font-size: 0.85rem;
       text-align: center;
@@ -108,7 +103,6 @@
     footer a:hover {
       text-decoration: none;
     }
-
     @media (max-width: 480px) {
       h1 {
         font-size: 1.5rem;
@@ -124,15 +118,15 @@
   </style>
 </head>
 <body>
-  <h1 id="title">デバイス情報</h1>
-  <div class="controls" role="group" aria-label="言語選択とモード切替">
+  <h1 id="title">Device-info</h1>
+  <div class="controls" role="group" aria-label="Language and Mode Switch">
     <button id="btn-ja" class="active" aria-pressed="true" type="button">日本語</button>
     <button id="btn-en" aria-pressed="false" type="button">English</button>
     <button id="btn-light" aria-pressed="false" type="button">ライト</button>
     <button id="btn-dark" class="active" aria-pressed="true" type="button">ダーク</button>
   </div>
 
-  <table id="info" role="table" aria-label="デバイス情報"></table>
+  <table id="info" role="table" aria-label="Device Information"></table>
 
   <footer>
     © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener">device-info.hamusata.f5.si</a><br />
@@ -162,7 +156,10 @@
           online: "オンライン状態",
           fetchedAt: "取得時刻",
           now: "現在時刻",
-          timezone: "タイムゾーン"
+          timezone: "タイムゾーン",
+          unknown: "不明",
+          online_yes: "オンライン",
+          online_no: "オフライン"
         },
         en: {
           title: "Device Info",
@@ -183,7 +180,10 @@
           online: "Online",
           fetchedAt: "Fetched At",
           now: "Now",
-          timezone: "Timezone"
+          timezone: "Timezone",
+          unknown: "Unknown",
+          online_yes: "Online",
+          online_no: "Offline"
         }
       };
 
@@ -198,16 +198,15 @@
       const btnDark = document.getElementById('btn-dark');
       const titleEl = document.getElementById('title');
 
-      // OS検出詳細
       function detectOS() {
         const ua = navigator.userAgent;
         if (/Android/.test(ua)) {
-          const version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || "不明";
-          const model = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || "不明端末";
+          const version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || dict[currentLang].unknown;
+          const model = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || dict[currentLang].unknown;
           return { name: "Android", version, device: model };
         }
         if (/iPhone|iPad|iPod/.test(ua)) {
-          const version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || "不明";
+          const version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || dict[currentLang].unknown;
           const model = /iPhone/.test(ua) ? "iPhone" : "iPad";
           return { name: model === "iPhone" ? "iOS" : "iPadOS", version, device: model };
         }
@@ -221,19 +220,18 @@
             "6.0": "Vista",
             "5.1": "XP"
           };
-          return { name: "Windows", version: map[ver] || ver, device: "PC" };
+          return { name: "Windows", version: map[ver] || ver || dict[currentLang].unknown, device: "PC" };
         }
         if (/Mac OS X/.test(ua)) {
-          const version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || "不明";
+          const version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || dict[currentLang].unknown;
           return { name: "macOS", version, device: "Mac" };
         }
         if (/Linux/.test(navigator.platform)) {
-          return { name: "Linux", version: "不明", device: "Linux端末" };
+          return { name: "Linux", version: dict[currentLang].unknown, device: "Linux端末" };
         }
-        return { name: "不明", version: "不明", device: "不明" };
+        return { name: dict[currentLang].unknown, version: dict[currentLang].unknown, device: dict[currentLang].unknown };
       }
 
-      // ブラウザ名取得
       function getBrowser() {
         const ua = navigator.userAgent;
         if (/Edg\//.test(ua)) return "Microsoft Edge";
@@ -241,14 +239,30 @@
         if (/Chrome\//.test(ua)) return "Chrome";
         if (/Firefox\//.test(ua)) return "Firefox";
         if (/Safari/.test(ua) && !/Chrome/.test(ua)) return "Safari";
-        return "不明";
+        return dict[currentLang].unknown;
       }
 
-      // 端末情報テーブル行作成
       function createRow(label, value) {
         const row = document.createElement('tr');
         row.innerHTML = `<th scope="row">${label}</th><td>${value}</td>`;
         return row;
+      }
+
+      async function fetchIPData() {
+        const ipv4 = await fetch('https://api.ipify.org?format=json')
+          .then(res => res.json())
+          .then(data => data.ip || dict[currentLang].unknown)
+          .catch(() => dict[currentLang].unknown);
+
+        const ipv6 = await fetch('https://api64.ipify.org?format=json')
+          .then(res => res.json())
+          .then(data => data.ip || dict[currentLang].unknown)
+          .catch(() => dict[currentLang].unknown);
+
+        // Cloudflare Pages対応で/ cdn-cgi/trace は使わず
+        const currentIP = ipv4;
+
+        return { ipv4, ipv6, currentIP };
       }
 
       async function updateInfo() {
@@ -259,41 +273,21 @@
         const osInfo = detectOS();
         const browser = getBrowser();
 
-        // IPv4
-        const ipv4 = await fetch('https://api.ipify.org?format=json')
-          .then(res => res.json())
-          .then(data => data.ip)
-          .catch(() => '取得失敗');
+        const { ipv4, ipv6, currentIP } = await fetchIPData();
 
-        // IPv6
-        const ipv6 = await fetch('https://api64.ipify.org?format=json')
-          .then(res => res.json())
-          .then(data => data.ip)
-          .catch(() => '取得失敗');
+        const cpuCores = navigator.hardwareConcurrency || lang.unknown;
+        const memory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : lang.unknown;
 
-        // 現在接続IP（Cloudflareのエンドポイント、環境依存）
-        const currentIP = await fetch('/cdn-cgi/trace')
-          .then(res => res.text())
-          .then(text => {
-            const m = text.match(/ip=([^\n]+)/);
-            return m ? m[1] : '取得失敗';
-          })
-          .catch(() => '取得失敗');
-
-        // CPUコア数・メモリ
-        const cpuCores = navigator.hardwareConcurrency || '不明';
-        const memory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : '不明';
-
-        // 画面・表示情報
         const screenRes = `${screen.width} x ${screen.height}`;
         const viewport = `${window.innerWidth} x ${window.innerHeight}`;
         const colorDepth = screen.colorDepth;
         const pixelDepth = screen.pixelDepth;
 
-        // 日時
         const fetchedAt = new Date();
         const now = new Date();
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '不明';
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || lang.unknown;
+
+        const onlineStatus = navigator.onLine ? lang.online_yes : lang.online_no;
 
         const infoList = [
           [lang.os, osInfo.name],
@@ -307,10 +301,10 @@
           [lang.pixelDepth, pixelDepth],
           [lang.cpu, cpuCores],
           [lang.memory, memory],
-          [lang.ipv6, ipv6],
           [lang.ipv4, ipv4],
+          [lang.ipv6, ipv6],
           [lang.ip, currentIP],
-          [lang.online, navigator.onLine ? (currentLang === 'ja' ? 'オンライン' : 'Online') : (currentLang === 'ja' ? 'オフライン' : 'Offline')],
+          [lang.online, onlineStatus],
           [lang.fetchedAt, fetchedAt.toLocaleString()],
           [lang.now, now.toLocaleString()],
           [lang.timezone, timezone]
@@ -341,7 +335,6 @@
         favicon.href = darkMode ? 'icon-dark.png' : 'icon-light.png';
       }
 
-      // 現在時刻だけ1秒ごとに更新（秒単位で動かす）
       function updateCurrentTime() {
         const nowStr = new Date().toLocaleString();
         const rows = table.querySelectorAll('tr');
@@ -358,16 +351,12 @@
       btnLight.addEventListener('click', () => setMode(false));
       btnDark.addEventListener('click', () => setMode(true));
 
-      // 初期セットアップ
       setMode(darkMode);
       setLang(currentLang);
       updateInfo();
 
-      // 情報は1分ごとに更新（IPなどの変化に対応）
-      setInterval(updateInfo, 60000);
-
-      // 現在時刻は1秒ごとに更新
-      setInterval(updateCurrentTime, 1000);
+      setInterval(updateInfo, 60000); // 1分毎に情報を最新化
+      setInterval(updateCurrentTime, 1000); // 1秒毎に現在時刻更新
     })();
   </script>
 </body>
