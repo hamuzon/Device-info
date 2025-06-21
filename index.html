@@ -1,116 +1,292 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Device Info</title>
-  <link rel="icon" href="icon.png" type="image/png" />
-  <style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Device Info</title>
+
+<style>
+  :root {
+    --bg-light: #f0f4ff;
+    --text-light: #222;
+    --bg-dark: #001f3f;
+    --text-dark: #a3c4f3;
+    --accent-light: #0057e7;
+    --accent-dark: #80d8ff;
+    --border-light: #0074d9;
+    --border-dark: #0074d9;
+  }
+  body {
+    font-family: 'Share Tech Mono', monospace;
+    margin: 0;
+    padding: 1rem;
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  body.light {
+    background-color: var(--bg-light);
+    color: var(--text-light);
+  }
+  h1 {
+    margin-bottom: 1rem;
+    color: var(--accent-dark);
+  }
+  .controls {
+    margin-bottom: 1rem;
+  }
+  button {
+    margin: 0 0.3rem;
+    padding: 0.3rem 0.7rem;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-dark);
+    background: transparent;
+    color: inherit;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  button:hover, button:focus {
+    background-color: var(--accent-dark);
+    color: #fff;
+    outline: none;
+  }
+  button.active {
+    background-color: var(--accent-dark);
+    color: #fff;
+  }
+  table {
+    border-collapse: collapse;
+    max-width: 720px;
+    width: 100%;
+  }
+  th, td {
+    border: 1.5px solid var(--border-dark);
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+  }
+  body.light th, body.light td {
+    border-color: var(--border-light);
+  }
+  th {
+    background-color: var(--accent-dark);
+    color: #fff;
+  }
+  body.light th {
+    background-color: var(--accent-light);
+    color: #000;
+  }
+  @media (max-width: 480px) {
     body {
-      background-color: #001f3f;
-      color: #a3c4f3;
-      font-family: 'Share Tech Mono', monospace;
-      margin: 0;
-      padding: 2rem 1rem 4rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      padding: 0.7rem;
     }
-
-    h1 {
-      color: #80d8ff;
-      margin-bottom: 1rem;
+    button {
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
     }
-
-    pre {
-      background: #002a4d;
-      border: 1.5px solid #0074d9;
-      border-radius: 12px;
-      padding: 1.5rem;
-      max-width: 720px;
-      width: 100%;
-      font-size: 1rem;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      box-shadow: 0 0 15px #0074d988, inset 0 0 30px #0074d944;
-    }
-
-    footer {
-      margin-top: auto;
-      padding: 1rem;
-      font-size: 0.85rem;
-      color: #89c3ff;
-      text-align: center;
-    }
-
-    footer a {
-      color: #55aaff;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 480px) {
-      pre {
-        font-size: 0.95rem;
-        padding: 1rem;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
-  <h1>Device info</h1>
-  <pre id="info">取得中...</pre>
+  <h1 id="title">Device Info</h1>
 
-  <footer>
-    © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener">device-info.hamusata.f5.si</a><br />
-    使用ライブラリ: <a href="https://api.ipify.org" target="_blank" rel="noopener">ipify API</a>, JavaScript Web API<br />
-    表示される情報は一部、正確でない可能性があります。
-  </footer>
+  <div class="controls" role="region" aria-label="Language and Mode Switcher">
+    <button id="btn-ja" type="button" aria-pressed="true">日本語</button>
+    <button id="btn-en" type="button" aria-pressed="false">English</button>
+    <button id="btn-light" type="button" aria-pressed="false">ライトモード</button>
+    <button id="btn-dark" type="button" aria-pressed="true">ダークモード</button>
+  </div>
+
+  <table aria-live="polite" aria-atomic="true" id="info-table">
+    <tbody>
+      <!-- 動的に挿入 -->
+    </tbody>
+  </table>
 
 <script>
+(() => {
+  'use strict';
+
+  // 多言語辞書
+  const dict = {
+    ja: {
+      title: "デバイス情報",
+      osInfo: "OS 情報",
+      osName: "OS名",
+      osVersion: "バージョン",
+      deviceName: "端末名",
+
+      browserInfo: "ブラウザ情報",
+      browserName: "ブラウザ",
+      userAgent: "ユーザーエージェント",
+      language: "言語",
+
+      displayInfo: "表示・システム情報",
+      screenRes: "画面解像度",
+      viewport: "ビューポート",
+      colorDepth: "色深度",
+      pixelDepth: "ピクセル深度",
+      cpuCores: "CPUコア数",
+      memory: "メモリ",
+      battery: "バッテリー",
+      touchSupport: "タッチ対応",
+
+      networkInfo: "ネットワーク",
+      ipv6: "IPv6アドレス",
+      ipv4: "IPv4アドレス",
+      currentIP: "使用中のIP",
+      onlineStatus: "オンライン状態",
+
+      dateTime: "日時",
+      fetchedAt: "取得時刻",
+      now: "現在時刻",
+      timezone: "タイムゾーン",
+
+      langBtn: { ja: "日本語", en: "English" },
+      modeBtn: { light: "ライトモード", dark: "ダークモード" },
+
+      online: "オンライン",
+      offline: "オフライン",
+      batteryUnsupported: "非対応",
+      touchYes: "あり",
+      touchNo: "なし",
+    },
+    en: {
+      title: "Device Info",
+      osInfo: "OS Information",
+      osName: "OS Name",
+      osVersion: "Version",
+      deviceName: "Device",
+
+      browserInfo: "Browser Information",
+      browserName: "Browser",
+      userAgent: "User Agent",
+      language: "Language",
+
+      displayInfo: "Display & System Info",
+      screenRes: "Screen Resolution",
+      viewport: "Viewport",
+      colorDepth: "Color Depth",
+      pixelDepth: "Pixel Depth",
+      cpuCores: "CPU Cores",
+      memory: "Memory",
+      battery: "Battery",
+      touchSupport: "Touch Support",
+
+      networkInfo: "Network",
+      ipv6: "IPv6 Address",
+      ipv4: "IPv4 Address",
+      currentIP: "Current IP",
+      onlineStatus: "Online Status",
+
+      dateTime: "Date & Time",
+      fetchedAt: "Fetched At",
+      now: "Current Time",
+      timezone: "Timezone",
+
+      langBtn: { ja: "Japanese", en: "English" },
+      modeBtn: { light: "Light Mode", dark: "Dark Mode" },
+
+      online: "Online",
+      offline: "Offline",
+      batteryUnsupported: "Unsupported",
+      touchYes: "Yes",
+      touchNo: "No",
+    }
+  };
+
+  // 状態管理
+  let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
+  let darkMode = true;
+
+  // 要素取得
+  const titleEl = document.getElementById('title');
+  const tableBody = document.querySelector('#info-table tbody');
+  const btnJa = document.getElementById('btn-ja');
+  const btnEn = document.getElementById('btn-en');
+  const btnLight = document.getElementById('btn-light');
+  const btnDark = document.getElementById('btn-dark');
+
+  // OS判定
   function detectOS() {
     const ua = navigator.userAgent;
-    if (/Android/.test(ua)) {
-      const version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || "不明";
-      const model = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || "不明端末";
-      return { name: "Android", version, device: model };
-    }
-    if (/iPhone|iPad|iPod/.test(ua)) {
-      const version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || "不明";
-      const model = /iPhone/.test(ua) ? "iPhone" : "iPad";
-      return { name: model === "iPhone" ? "iOS" : "iPadOS", version, device: model };
-    }
+    let name = "不明";
+    let version = "不明";
+    let device = "不明";
+
     if (/Windows NT/.test(ua)) {
-      const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
+      name = "Windows";
+      const ver = ua.match(/Windows NT ([\d.]+)/)?.[1] || "";
       const map = {
-        "10.0": "10 / 11", "6.3": "8.1", "6.2": "8", "6.1": "7", "6.0": "Vista", "5.1": "XP"
+        "10.0": "10 / 11",
+        "6.3": "8.1",
+        "6.2": "8",
+        "6.1": "7",
+        "6.0": "Vista",
+        "5.1": "XP",
+        "5.0": "2000"
       };
-      return { name: "Windows", version: map[ver] || ver, device: "PC" };
+      version = map[ver] || ver || "不明";
+      device = "PC";
+    } else if (/Mac OS X/.test(ua)) {
+      name = "macOS";
+      version = ua.match(/Mac OS X (\d+[_\.]\d+([_\.]\d+)?)/)?.[1]?.replace(/_/g, ".") || "不明";
+      device = "Mac";
+    } else if (/Android/.test(ua)) {
+      name = "Android";
+      version = ua.match(/Android\s+([\d.]+)/)?.[1] || "不明";
+      device = ua.match(/;\s?([^;\/]+)\s+Build/i)?.[1] || "不明端末";
+    } else if (/iPhone|iPad|iPod/.test(ua)) {
+      device = /iPhone/.test(ua) ? "iPhone" : (/iPad/.test(ua) ? "iPad" : "iPod");
+      if(device === "iPhone" || device === "iPod") name = "iOS";
+      else name = "iPadOS";
+      version = ua.match(/OS (\d+)_(\d+)_?(\d+)?/) || ua.match(/OS (\d+)[_.](\d+)/);
+      if(version) {
+        version = [version[1], version[2], version[3]||0].join(".");
+      } else {
+        version = "不明";
+      }
+    } else if (/Linux/.test(navigator.platform)) {
+      name = "Linux";
+      version = "不明";
+      device = "Linux端末";
     }
-    if (/Mac OS X/.test(ua)) {
-      const version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || "不明";
-      return { name: "macOS", version, device: "Mac" };
-    }
-    if (/Linux/.test(navigator.platform)) {
-      return { name: "Linux", version: "不明", device: "Linux端末" };
-    }
-    return { name: "不明", version: "不明", device: "不明" };
+
+    return {name, version, device};
   }
 
+  // ブラウザ名＋バージョン取得
   function getBrowser() {
     const ua = navigator.userAgent;
-    if (/Edg\//.test(ua)) return "Microsoft Edge";
-    if (/OPR\//.test(ua)) return "Opera";
-    if (/Chrome\//.test(ua)) return "Chrome";
-    if (/Firefox\//.test(ua)) return "Firefox";
-    if (/Safari/.test(ua) && !/Chrome/.test(ua)) return "Safari";
-    return "不明";
+    let browser = "不明";
+    let version = "";
+
+    if (/Edg\/([\d.]+)/.test(ua)) {
+      browser = "Microsoft Edge";
+      version = ua.match(/Edg\/([\d.]+)/)[1];
+    } else if (/OPR\/([\d.]+)/.test(ua)) {
+      browser = "Opera";
+      version = ua.match(/OPR\/([\d.]+)/)[1];
+    } else if (/Chrome\/([\d.]+)/.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua)) {
+      browser = "Chrome";
+      version = ua.match(/Chrome\/([\d.]+)/)[1];
+    } else if (/Firefox\/([\d.]+)/.test(ua)) {
+      browser = "Firefox";
+      version = ua.match(/Firefox\/([\d.]+)/)[1];
+    } else if (/Safari\/([\d.]+)/.test(ua) && !/Chrome\//.test(ua)) {
+      browser = "Safari";
+      version = ua.match(/Version\/([\d.]+)/)?.[1] || "不明";
+    }
+
+    return version ? `${browser} ${version}` : browser;
   }
 
+  // 表示情報
   function getDisplayInfo() {
     return {
       screen: `${screen.width} x ${screen.height}`,
@@ -120,99 +296,184 @@
     };
   }
 
+  // CPU
   function getCPU() {
     return navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} コア` : "不明";
   }
 
+  // メモリ
   function getMemory() {
     return navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "不明";
   }
 
-  async function getIP() {
+  // バッテリー
+  async function getBatteryInfo() {
     try {
-      const res = await fetch("/cdn-cgi/trace");
-      const text = await res.text();
-      const ip = text.match(/ip=([^\n]+)/)?.[1] || "不明";
-      return ip;
-    } catch {
-      return "取得失敗";
-    }
+      if (navigator.getBattery) {
+        const battery = await navigator.getBattery();
+        return battery.level === undefined ? dict[currentLang].batteryUnsupported :
+          `${Math.round(battery.level * 100)}% (${battery.charging ? dict[currentLang].online : dict[currentLang].offline})`;
+      }
+    } catch {}
+    return dict[currentLang].batteryUnsupported;
   }
 
-  async function getIPv4() {
+  // IP情報
+  async function getIPInfo() {
+    let ipv4 = "取得失敗";
+    let ipv6 = "取得失敗";
+    let current = "不明";
+
     try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      return data.ip || "不明";
-    } catch {
-      return "取得失敗";
-    }
+      const [v4Res, v6Res] = await Promise.all([
+        fetch("https://api.ipify.org?format=json"),
+        fetch("https://api64.ipify.org?format=json")
+      ]);
+
+      const v4Data = await v4Res.json();
+      const v6Data = await v6Res.json();
+
+      ipv4 = v4Data.ip || "不明";
+      ipv6 = v6Data.ip || "不明";
+
+      current = (ipv6 !== ipv4 && ipv6 !== "不明") ? ipv6 : ipv4;
+    } catch {}
+
+    return { ipv4, ipv6, current };
   }
 
+  // タイムゾーン
   function getTimezone() {
     const now = new Date();
     const offset = -now.getTimezoneOffset() / 60;
     return `UTC${offset >= 0 ? "+" : ""}${offset}`;
   }
 
-  async function updateInfo() {
-    const infoEl = document.getElementById("info");
-    if (!infoEl) return;
+  // ブラウザ言語
+  function getBrowserLanguage() {
+    return navigator.language || "不明";
+  }
 
+  // タッチ対応
+  function hasTouchSupport() {
+    return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0)) ? dict[currentLang].touchYes : dict[currentLang].touchNo;
+  }
+
+  // 表示テーブル作成
+  function createRow(label, value) {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    const td = document.createElement("td");
+    th.textContent = label;
+    td.textContent = value;
+    tr.appendChild(th);
+    tr.appendChild(td);
+    return tr;
+  }
+
+  // メイン更新関数
+  async function updateInfo() {
     const os = detectOS();
     const browser = getBrowser();
     const display = getDisplayInfo();
-    const ip = await getIP();
-    const ipv4 = await getIPv4();
-    const fetchedAt = new Date();
+    const cpu = getCPU();
+    const memory = getMemory();
+    const battery = await getBatteryInfo();
+    const ipInfo = await getIPInfo();
     const timezone = getTimezone();
+    const lang = getBrowserLanguage();
+    const touch = hasTouchSupport();
+    const fetchedAt = new Date();
 
-    function render() {
-      const now = new Date();
-      infoEl.textContent = `
-■ OS 情報
-  OS名      : ${os.name}
-  バージョン: ${os.version}
-  端末名    : ${os.device}
+    tableBody.innerHTML = "";
 
-■ ブラウザ情報
-  ブラウザ  : ${browser}
-  ユーザーエージェント: ${navigator.userAgent}
+    // OS情報
+    tableBody.appendChild(createRow(dict[currentLang].osInfo, ""));
+    tableBody.appendChild(createRow(dict[currentLang].osName, os.name));
+    tableBody.appendChild(createRow(dict[currentLang].osVersion, os.version));
+    tableBody.appendChild(createRow(dict[currentLang].deviceName, os.device));
 
-■ 表示・システム情報
-  解像度      : ${display.screen}
-  ビューポート: ${display.viewport}
-  色深度      : ${display.colorDepth}
-  ピクセル深度: ${display.pixelDepth}
-  CPU         : ${getCPU()}
-  メモリ      : ${getMemory()}
+    // ブラウザ情報
+    tableBody.appendChild(createRow(dict[currentLang].browserInfo, ""));
+    tableBody.appendChild(createRow(dict[currentLang].browserName, browser));
+    tableBody.appendChild(createRow(dict[currentLang].userAgent, navigator.userAgent));
+    tableBody.appendChild(createRow(dict[currentLang].language, lang));
 
-■ ネットワーク
-  IPアドレス : ${ip}
-  IPv4       : ${ipv4}
-  オンライン : ${navigator.onLine ? "オンライン" : "オフライン"}
+    // 表示・システム情報
+    tableBody.appendChild(createRow(dict[currentLang].displayInfo, ""));
+    tableBody.appendChild(createRow(dict[currentLang].screenRes, display.screen));
+    tableBody.appendChild(createRow(dict[currentLang].viewport, display.viewport));
+    tableBody.appendChild(createRow(dict[currentLang].colorDepth, display.colorDepth));
+    tableBody.appendChild(createRow(dict[currentLang].pixelDepth, display.pixelDepth));
+    tableBody.appendChild(createRow(dict[currentLang].cpuCores, cpu));
+    tableBody.appendChild(createRow(dict[currentLang].memory, memory));
+    tableBody.appendChild(createRow(dict[currentLang].battery, battery));
+    tableBody.appendChild(createRow(dict[currentLang].touchSupport, touch));
 
-■ 日時
-  取得時刻   : ${fetchedAt.toLocaleString()}
-  現在時刻   : ${now.toLocaleString()}
-  タイムゾーン: ${timezone}
-      `.trim();
-    }
+    // ネットワーク情報
+    tableBody.appendChild(createRow(dict[currentLang].networkInfo, ""));
+    tableBody.appendChild(createRow(dict[currentLang].ipv6, ipInfo.ipv6));
+    tableBody.appendChild(createRow(dict[currentLang].ipv4, ipInfo.ipv4));
+    tableBody.appendChild(createRow(dict[currentLang].currentIP, ipInfo.current));
+    tableBody.appendChild(createRow(dict[currentLang].onlineStatus, navigator.onLine ? dict[currentLang].online : dict[currentLang].offline));
 
-    render();
-    setInterval(render, 1000);
+    // 日時情報
+    tableBody.appendChild(createRow(dict[currentLang].dateTime, ""));
+    tableBody.appendChild(createRow(dict[currentLang].fetchedAt, fetchedAt.toLocaleString()));
+    tableBody.appendChild(createRow(dict[currentLang].now, new Date().toLocaleString()));
+    tableBody.appendChild(createRow(dict[currentLang].timezone, timezone));
   }
 
-  function waitUntilAvailable(retry = 0) {
-    const el = document.getElementById("info");
-    if (el) {
-      updateInfo();
-    } else if (retry < 20) {
-      setTimeout(() => waitUntilAvailable(retry + 1), 500);
-    }
+  // ボタン制御
+  function setLang(lang) {
+    currentLang = lang;
+    btnJa.classList.toggle("active", lang === "ja");
+    btnJa.setAttribute("aria-pressed", lang === "ja");
+    btnEn.classList.toggle("active", lang === "en");
+    btnEn.setAttribute("aria-pressed", lang === "en");
+    updateText();
+    updateInfo();
   }
 
-  waitUntilAvailable();
+  function setMode(isDark) {
+    darkMode = isDark;
+    if(darkMode) {
+      document.body.classList.remove("light");
+    } else {
+      document.body.classList.add("light");
+    }
+    btnDark.classList.toggle("active", isDark);
+    btnDark.setAttribute("aria-pressed", isDark);
+    btnLight.classList.toggle("active", !isDark);
+    btnLight.setAttribute("aria-pressed", !isDark);
+  }
+
+  // UI文言更新
+  function updateText() {
+    const d = dict[currentLang];
+    titleEl.textContent = d.title;
+    btnJa.textContent = d.langBtn.ja;
+    btnEn.textContent = d.langBtn.en;
+    btnLight.textContent = d.modeBtn.light;
+    btnDark.textContent = d.modeBtn.dark;
+  }
+
+  // イベント設定
+  btnJa.addEventListener("click", () => setLang("ja"));
+  btnEn.addEventListener("click", () => setLang("en"));
+  btnLight.addEventListener("click", () => setMode(false));
+  btnDark.addEventListener("click", () => setMode(true));
+
+  // 初期セット
+  setLang(currentLang);
+  setMode(true);
+
+  // 時刻は1秒毎に更新（バッテリー、IPは更新しない）
+  setInterval(() => {
+    updateInfo();
+  }, 1000);
+
+})();
 </script>
 </body>
 </html>
