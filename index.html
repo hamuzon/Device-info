@@ -1,536 +1,240 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!DOCTYPE html><html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Device Info</title>
-<link id="favicon" rel="icon" type="image/png" href="icon-dark.png" />
-<style>
-  :root {
-    --dark-bg: #001b33;
-    --dark-text: #a3c4f3;
-    --dark-accent: #4da6ff;
-    --dark-card-bg: #003366;
-    --light-bg: #f5faff;
-    --light-text: #0a1a33;
-    --light-accent: #4d82ff;
-    --light-card-bg: #dbe9ff;
-    --border-radius: 12px;
-    --font-family: 'Share Tech Mono', monospace;
-    --transition: 0.3s ease;
-  }
-  body {
-    font-family: var(--font-family);
-    margin: 0;
-    padding: 1.5rem 1rem 3rem;
-    background-color: var(--dark-bg);
-    color: var(--dark-text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    transition: background-color var(--transition), color var(--transition);
-    font-size: 16px;
-  }
-  body.light {
-    background-color: var(--light-bg);
-    color: var(--light-text);
-  }
-  h1 {
-    font-weight: 700;
-    font-size: 2.0rem;
-    margin-bottom: 1.5rem;
-    color: var(--dark-accent);
-    transition: color var(--transition);
-  }
-  body.light h1 {
-    color: var(--light-accent);
-  }
-  .controls {
-    display: flex;
-    gap: 0.7rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  button {
-    font-family: var(--font-family);
-    font-size: 1rem;
-    padding: 0.55rem 1.2rem;
-    border-radius: var(--border-radius);
-    border: 2.5px solid var(--dark-accent);
-    background: transparent;
-    color: var(--dark-text);
-    cursor: pointer;
-    user-select: none;
-    transition: background-color var(--transition), border-color var(--transition), color var(--transition);
-    min-width: 90px;
-  }
-  button:hover, button:focus {
-    background-color: var(--dark-accent);
-    color: white;
-    outline: none;
-  }
-  button.active {
-    background-color: var(--dark-accent);
-    color: white;
-    border-color: var(--dark-accent);
-  }
-  body.light button {
-    border-color: var(--light-accent);
-    color: var(--light-text);
-  }
-  body.light button:hover, body.light button:focus {
-    background-color: var(--light-accent);
-    color: white;
-    outline: none;
-  }
-  body.light button.active {
-    background-color: var(--light-accent);
-    color: white;
-    border-color: var(--light-accent);
-  }
-  main {
-    width: 100%;
-    max-width: 720px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.8rem;
-  }
-  section.card {
-    background-color: var(--dark-card-bg);
-    border-radius: var(--border-radius);
-    padding: 1.3rem 1.8rem;
-    box-shadow: 0 4px 10px rgb(0 0 0 / 0.25);
-    transition: background-color var(--transition);
-  }
-  body.light section.card {
-    background-color: var(--light-card-bg);
-    box-shadow: none;
-  }
-  section.card h2 {
-    margin: 0 0 1rem 0;
-    color: var(--dark-accent);
-    font-weight: 700;
-    font-size: 1.3rem;
-    border-bottom: 2.5px solid var(--dark-accent);
-    padding-bottom: 0.3rem;
-    transition: color var(--transition), border-color var(--transition);
-  }
-  body.light section.card h2 {
-    color: var(--light-accent);
-    border-color: var(--light-accent);
-  }
-  dl {
-    margin: 0;
-    display: grid;
-    grid-template-columns: minmax(120px, 30%) 1fr;
-    row-gap: 0.7rem;
-    column-gap: 1rem;
-  }
-  dt {
-    font-weight: 600;
-    align-self: center;
-    color: var(--dark-accent);
-  }
-  body.light dt {
-    color: var(--light-accent);
-  }
-  dd {
-    margin: 0;
-    word-break: break-word;
-  }
-  footer {
-    max-width: 720px;
-    width: 100%;
-    padding: 1.5rem 1rem 2rem;
-    font-size: 0.85rem;
-    color: var(--dark-text);
-    text-align: center;
-    user-select: none;
-    border-top: 1px solid var(--dark-accent);
-    margin-top: auto;
-    transition: color var(--transition), border-color var(--transition);
-  }
-  body.light footer {
-    color: var(--light-text);
-    border-color: var(--light-accent);
-  }
-  footer a {
-    color: inherit;
-    text-decoration: underline;
-  }
-  footer a:hover,
-  footer a:focus {
-    color: var(--dark-accent);
-  }
-  body.light footer a:hover,
-  body.light footer a:focus {
-    color: var(--light-accent);
-  }
-  @media (max-width: 480px) {
-    body {
-      font-size: 15px;
-      padding: 1rem 0.8rem 2rem;
-    }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1.2rem;
-    }
-    .controls {
-      gap: 0.5rem;
-    }
-    button {
-      min-width: 70px;
-      font-size: 0.95rem;
-      padding: 0.4rem 1rem;
-    }
-    section.card {
-      padding: 1rem 1.2rem;
-    }
-    section.card h2 {
-      font-size: 1.15rem;
-      border-bottom-width: 2px;
-    }
-    dl {
-      grid-template-columns: 1fr 2fr;
-      column-gap: 0.8rem;
-      row-gap: 0.5rem;
-    }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Info</title>
+  <link id="favicon" rel="icon" type="image/png" href="icon-dark.png" />
+  <style>
+    :root {
+      --bg-dark: #001b33;
+      --bg-light: #f5faff;
+      --text-dark: #a3c4f3;
+      --text-light: #0a1a33;
+      --accent-dark: #4da6ff;
+      --accent-light: #4d82ff;
+      --font-mono: 'Share Tech Mono', monospace;
+    }body {
+  margin: 0;
+  font-family: var(--font-mono);
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+  transition: background 0.3s, color 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+body.light {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
+
+h1 {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.controls button {
+  font-family: var(--font-mono);
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--accent-dark);
+  background: transparent;
+  color: var(--text-dark);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+body.light .controls button {
+  border-color: var(--accent-light);
+  color: var(--text-light);
+}
+.controls button.active {
+  background: var(--accent-dark);
+  color: #fff;
+}
+body.light .controls button.active {
+  background: var(--accent-light);
+}
+
+table {
+  width: 100%;
+  max-width: 700px;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+th, td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #444;
+  text-align: left;
+  word-break: break-word;
+}
+body.light th, body.light td {
+  border-color: #ccc;
+}
+th {
+  font-weight: bold;
+}
+
+footer {
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+  </style>
 </head>
 <body>
   <h1 id="title">Device Info</h1>
-
-  <div class="controls" role="region" aria-label="Language and Mode Switcher">
-    <button id="btn-ja" type="button" aria-pressed="true" class="active">日本語</button>
-    <button id="btn-en" type="button" aria-pressed="false">English</button>
-    <button id="btn-light" type="button" aria-pressed="false">ライト</button>
-    <button id="btn-dark" type="button" aria-pressed="true" class="active">ダーク</button>
-  </div>
-
-  <main>
-    <section class="card" aria-labelledby="os-info-title">
-      <h2 id="os-info-title">OS 情報</h2>
-      <dl id="os-info"></dl>
-    </section>
-    <section class="card" aria-labelledby="browser-info-title">
-      <h2 id="browser-info-title">ブラウザ情報</h2>
-      <dl id="browser-info"></dl>
-    </section>
-    <section class="card" aria-labelledby="display-info-title">
-      <h2 id="display-info-title">表示・システム情報</h2>
-      <dl id="display-info"></dl>
-    </section>
-    <section class="card" aria-labelledby="battery-info-title">
-      <h2 id="battery-info-title">バッテリー</h2>
-      <dl id="battery-info"></dl>
-    </section>
-    <section class="card" aria-labelledby="network-info-title">
-      <h2 id="network-info-title">ネットワーク</h2>
-      <dl id="network-info"></dl>
-    </section>
-    <section class="card" aria-labelledby="date-info-title">
-      <h2 id="date-info-title">日時</h2>
-      <dl id="date-info"></dl>
-    </section>
-  </main>
-
-  <footer>
-    © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener noreferrer">device-info.hamusata.f5.si</a><br />
-    使用ライブラリ: <a href="https://api.ipify.org" target="_blank" rel="noopener noreferrer">ipify API</a>, <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">JavaScript Web API</a><br />
+  <div class="controls">
+    <button id="btn-ja" class="active" aria-pressed="true">日本語</button>
+    <button id="btn-en" aria-pressed="false">English</button>
+    <button id="btn-light" aria-pressed="false">ライト</button>
+    <button id="btn-dark" class="active" aria-pressed="true">ダーク</button>
+  </div>  <table id="info"></table>  <footer>
+    © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener">device-info.hamusata.f5.si</a><br />
+    使用ライブラリ: <a href="https://api.ipify.org" target="_blank" rel="noopener">ipify API</a>, JavaScript Web API<br />
     表示される情報は一部、正確でない可能性があります。
-  </footer>
-
-<script>
-(() => {
-  'use strict';
-
-  const dict = {
-    ja: {
-      title: "デバイス情報",
-      osName: "OS名",
-      osVersion: "バージョン",
-      deviceName: "端末名",
-      browserName: "ブラウザ",
-      userAgent: "ユーザーエージェント",
-      language: "言語",
-      screenRes: "画面解像度",
-      viewport: "ビューポート",
-      colorDepth: "色深度",
-      pixelDepth: "ピクセル深度",
-      cpuCores: "CPUコア数",
-      memory: "メモリ",
-      batteryLevel: "バッテリー残量",
-      touchSupport: "タッチ対応",
-      ipv6: "IPv6アドレス",
-      ipv4: "IPv4アドレス",
-      currentIP: "現在使用IP",
-      onlineStatus: "オンライン状態",
-      fetchedAt: "取得時刻",
-      now: "現在時刻",
-      timezone: "タイムゾーン",
-      online: "オンライン",
-      offline: "オフライン",
-      batteryUnsupported: "非対応",
-      touchYes: "あり",
-      touchNo: "なし",
-      ipFailed: "取得失敗",
-    },
-    en: {
-      title: "Device Info",
-      osName: "OS Name",
-      osVersion: "Version",
-      deviceName: "Device",
-      browserName: "Browser",
-      userAgent: "User Agent",
-      language: "Language",
-      screenRes: "Screen Resolution",
-      viewport: "Viewport",
-      colorDepth: "Color Depth",
-      pixelDepth: "Pixel Depth",
-      cpuCores: "CPU Cores",
-      memory: "Memory",
-      batteryLevel: "Battery Level",
-      touchSupport: "Touch Support",
-      ipv6: "IPv6 Address",
-      ipv4: "IPv4 Address",
-      currentIP: "Current IP",
-      onlineStatus: "Online Status",
-      fetchedAt: "Fetched At",
-      now: "Current Time",
-      timezone: "Timezone",
-      online: "Online",
-      offline: "Offline",
-      batteryUnsupported: "Unsupported",
-      touchYes: "Yes",
-      touchNo: "No",
-      ipFailed: "Failed",
-    }
-  };
-
-  let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
-  let darkMode = true;
-
-  const titleEl = document.getElementById('title');
-  const btnJa = document.getElementById('btn-ja');
-  const btnEn = document.getElementById('btn-en');
-  const btnLight = document.getElementById('btn-light');
-  const btnDark = document.getElementById('btn-dark');
-  const faviconEl = document.getElementById('favicon');
-
-  const osInfoDl = document.getElementById('os-info');
-  const browserInfoDl = document.getElementById('browser-info');
-  const displayInfoDl = document.getElementById('display-info');
-  const batteryInfoDl = document.getElementById('battery-info');
-  const networkInfoDl = document.getElementById('network-info');
-  const dateInfoDl = document.getElementById('date-info');
-
-  function detectOS() {
-    const ua = navigator.userAgent;
-    let name = dict[currentLang].unknown || "不明";
-    let version = dict[currentLang].unknown || "不明";
-    let device = dict[currentLang].unknown || "不明";
-
-    if (/Android/.test(ua)) {
-      name = "Android";
-      version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version;
-      device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device;
-    } else if (/iPhone|iPad|iPod/.test(ua)) {
-      device = /iPhone/.test(ua) ? "iPhone" : "iPad";
-      name = device === "iPhone" ? "iOS" : "iPadOS";
-      version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || version;
-    } else if (/Windows NT/.test(ua)) {
-      name = "Windows";
-      const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
-      const map = {
-        "10.0": "10 / 11",
-        "6.3": "8.1",
-        "6.2": "8",
-        "6.1": "7",
-        "6.0": "Vista",
-        "5.1": "XP"
+  </footer>  <script>
+    (function () {
+      const dict = {
+        ja: {
+          title: "デバイス情報",
+          os: "OS名",
+          version: "バージョン",
+          device: "端末名",
+          browser: "ブラウザ",
+          ua: "ユーザーエージェント",
+          screen: "画面解像度",
+          viewport: "ビューポート",
+          colorDepth: "色深度",
+          pixelDepth: "ピクセル深度",
+          cpu: "CPUコア数",
+          memory: "メモリ",
+          ipv4: "IPv4アドレス",
+          ipv6: "IPv6アドレス",
+          ip: "現在使用IP",
+          online: "オンライン状態",
+          fetchedAt: "取得時刻",
+          now: "現在時刻",
+          timezone: "タイムゾーン"
+        },
+        en: {
+          title: "Device Info",
+          os: "OS",
+          version: "Version",
+          device: "Device",
+          browser: "Browser",
+          ua: "User Agent",
+          screen: "Screen",
+          viewport: "Viewport",
+          colorDepth: "Color Depth",
+          pixelDepth: "Pixel Depth",
+          cpu: "CPU Cores",
+          memory: "Memory",
+          ipv4: "IPv4",
+          ipv6: "IPv6",
+          ip: "Current IP",
+          online: "Online",
+          fetchedAt: "Fetched At",
+          now: "Now",
+          timezone: "Timezone"
+        }
       };
-      version = map[ver] || ver || version;
-      device = "PC";
-    } else if (/Mac OS X/.test(ua)) {
-      name = "macOS";
-      version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || version;
-      device = "Mac";
-    } else if (/Linux/.test(navigator.platform)) {
-      name = "Linux";
-      version = "不明";
-      device = "Linux端末";
-    }
 
-    return { name, version, device };
-  }
+      let currentLang = 'ja';
+      let darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const table = document.getElementById('info');
+      const favicon = document.getElementById('favicon');
 
-  function getBrowser() {
-    const ua = navigator.userAgent;
-    if (/Edg\//.test(ua)) return "Microsoft Edge";
-    if (/OPR\//.test(ua)) return "Opera";
-    if (/Chrome\//.test(ua)) return "Chrome";
-    if (/Firefox\//.test(ua)) return "Firefox";
-    if (/Safari/.test(ua) && !/Chrome/.test(ua)) return "Safari";
-    return "不明";
-  }
-
-  function getDisplayInfo() {
-    return {
-      screen: `${screen.width} x ${screen.height}`,
-      viewport: `${window.innerWidth} x ${window.innerHeight}`,
-      colorDepth: screen.colorDepth,
-      pixelDepth: screen.pixelDepth,
-    };
-  }
-
-  function getCPU() {
-    return navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} コア` : dict[currentLang].batteryUnsupported;
-  }
-
-  function getMemory() {
-    if ('deviceMemory' in navigator) {
-      const mem = navigator.deviceMemory;
-      if (typeof mem === "number" && mem > 0) {
-        return `${mem} GB`;
+      function createRow(label, value) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<th>${label}</th><td>${value}</td>`;
+        return row;
       }
-    }
-    return dict[currentLang].batteryUnsupported;
-  }
 
-  function getBattery() {
-    if (!navigator.getBattery) return Promise.resolve(dict[currentLang].batteryUnsupported);
-    return navigator.getBattery().then(batt => {
-      const level = Math.round(batt.level * 100);
-      return `${level}% ${batt.charging ? "(charging)" : ""}`.trim();
-    }).catch(() => dict[currentLang].batteryUnsupported);
-  }
+      async function updateInfo() {
+        const ua = navigator.userAgent;
+        const lang = dict[currentLang];
+        table.innerHTML = '';
 
-  function getTouchSupport() {
-    return ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? dict[currentLang].touchYes : dict[currentLang].touchNo;
-  }
+        const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'macOS' : '不明';
+        const version = navigator.appVersion || '不明';
+        const device = navigator.platform || '不明';
 
-  async function getIP(method = "current") {
-    try {
-      if (method === "cloudflare") {
-        const res = await fetch("/cdn-cgi/trace");
-        const text = await res.text();
-        const ip = text.match(/ip=([^\n]+)/)?.[1];
-        return ip || dict[currentLang].ipFailed;
-      } else if (method === "ipv4") {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        return data.ip || dict[currentLang].ipFailed;
-      } else if (method === "ipv6") {
-        const res = await fetch("https://api64.ipify.org?format=json");
-        const data = await res.json();
-        return data.ip || dict[currentLang].ipFailed;
+        const browser = /Chrome/.test(ua) ? 'Chrome' : /Firefox/.test(ua) ? 'Firefox' : /Safari/.test(ua) ? 'Safari' : '不明';
+
+        const ipv4 = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => '取得失敗');
+        const ipv6 = await fetch('https://api64.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => '取得失敗');
+        const currentIP = await fetch('/cdn-cgi/trace').then(r => r.text()).then(t => t.match(/ip=([^\n]+)/)?.[1] || '取得失敗').catch(() => '取得失敗');
+
+        const now = new Date();
+        const fetchedAt = new Date();
+
+        const info = [
+          [lang.os, os],
+          [lang.version, version],
+          [lang.device, device],
+          [lang.browser, browser],
+          [lang.ua, ua],
+          [lang.screen, `${screen.width}x${screen.height}`],
+          [lang.viewport, `${window.innerWidth}x${window.innerHeight}`],
+          [lang.colorDepth, screen.colorDepth],
+          [lang.pixelDepth, screen.pixelDepth],
+          [lang.cpu, navigator.hardwareConcurrency || '不明'],
+          [lang.memory, navigator.deviceMemory ? `${navigator.deviceMemory} GB` : '不明'],
+          [lang.ipv6, ipv6],
+          [lang.ipv4, ipv4],
+          [lang.ip, currentIP],
+          [lang.online, navigator.onLine ? 'オンライン' : 'オフライン'],
+          [lang.fetchedAt, fetchedAt.toLocaleString()],
+          [lang.now, now.toLocaleString()],
+          [lang.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone]
+        ];
+
+        for (const [label, value] of info) {
+          table.appendChild(createRow(label, value));
+        }
       }
-    } catch {
-      return dict[currentLang].ipFailed;
-    }
-  }
 
-  function getTimezone() {
-    const now = new Date();
-    const offset = -now.getTimezoneOffset() / 60;
-    return `UTC${offset >= 0 ? "+" : ""}${offset}`;
-  }
+      function setLang(lang) {
+        currentLang = lang;
+        document.getElementById('title').textContent = dict[lang].title;
+        document.getElementById('btn-ja').classList.toggle('active', lang === 'ja');
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+        document.getElementById('btn-ja').setAttribute('aria-pressed', lang === 'ja');
+        document.getElementById('btn-en').setAttribute('aria-pressed', lang === 'en');
+        updateInfo();
+      }
 
-  function clearDl(dl) {
-    while(dl.firstChild) dl.removeChild(dl.firstChild);
-  }
-  function appendDl(dl, label, value) {
-    const dt = document.createElement("dt");
-    const dd = document.createElement("dd");
-    dt.textContent = label;
-    dd.textContent = value;
-    dl.appendChild(dt);
-    dl.appendChild(dd);
-  }
+      function setMode(isDark) {
+        darkMode = isDark;
+        document.body.classList.toggle('light', !darkMode);
+        document.getElementById('btn-light').classList.toggle('active', !darkMode);
+        document.getElementById('btn-dark').classList.toggle('active', darkMode);
+        document.getElementById('btn-light').setAttribute('aria-pressed', !darkMode);
+        document.getElementById('btn-dark').setAttribute('aria-pressed', darkMode);
+        favicon.href = darkMode ? 'icon-dark.png' : 'icon-light.png';
+      }
 
-  async function updateInfo() {
-    const os = detectOS();
-    const browser = getBrowser();
-    const display = getDisplayInfo();
-    const batteryVal = await getBattery();
-    const ipv6 = await getIP("ipv6");
-    const ipv4 = await getIP("ipv4");
-    const currentIP = await getIP("cloudflare");
-    const fetchedAt = new Date();
-    const now = new Date();
+      document.getElementById('btn-ja').onclick = () => setLang('ja');
+      document.getElementById('btn-en').onclick = () => setLang('en');
+      document.getElementById('btn-light').onclick = () => setMode(false);
+      document.getElementById('btn-dark').onclick = () => setMode(true);
 
-    clearDl(osInfoDl);
-    appendDl(osInfoDl, dict[currentLang].osName, os.name);
-    appendDl(osInfoDl, dict[currentLang].osVersion, os.version);
-    appendDl(osInfoDl, dict[currentLang].deviceName, os.device);
-
-    clearDl(browserInfoDl);
-    appendDl(browserInfoDl, dict[currentLang].browserName, browser);
-    appendDl(browserInfoDl, dict[currentLang].userAgent, navigator.userAgent);
-    appendDl(browserInfoDl, dict[currentLang].language, navigator.language);
-
-    clearDl(displayInfoDl);
-    appendDl(displayInfoDl, dict[currentLang].screenRes, display.screen);
-    appendDl(displayInfoDl, dict[currentLang].viewport, display.viewport);
-    appendDl(displayInfoDl, dict[currentLang].colorDepth, display.colorDepth);
-    appendDl(displayInfoDl, dict[currentLang].pixelDepth, display.pixelDepth);
-    appendDl(displayInfoDl, dict[currentLang].cpuCores, getCPU());
-    appendDl(displayInfoDl, dict[currentLang].memory, getMemory());
-    appendDl(displayInfoDl, dict[currentLang].touchSupport, getTouchSupport());
-
-    clearDl(batteryInfoDl);
-    appendDl(batteryInfoDl, dict[currentLang].batteryLevel, batteryVal);
-
-    clearDl(networkInfoDl);
-    appendDl(networkInfoDl, dict[currentLang].ipv6, ipv6);
-    appendDl(networkInfoDl, dict[currentLang].ipv4, ipv4);
-    appendDl(networkInfoDl, dict[currentLang].currentIP, currentIP);
-    appendDl(networkInfoDl, dict[currentLang].onlineStatus, navigator.onLine ? dict[currentLang].online : dict[currentLang].offline);
-
-    clearDl(dateInfoDl);
-    appendDl(dateInfoDl, dict[currentLang].fetchedAt, fetchedAt.toLocaleString());
-    appendDl(dateInfoDl, dict[currentLang].now, now.toLocaleString());
-    appendDl(dateInfoDl, dict[currentLang].timezone, getTimezone());
-  }
-
-  function setLang(lang) {
-    if (lang === currentLang) return;
-    currentLang = lang;
-    titleEl.textContent = dict[currentLang].title;
-    btnJa.classList.toggle("active", lang === "ja");
-    btnEn.classList.toggle("active", lang === "en");
-    btnJa.setAttribute("aria-pressed", lang === "ja");
-    btnEn.setAttribute("aria-pressed", lang === "en");
-    updateInfo();
-  }
-
-  function setMode(isDark) {
-    darkMode = isDark;
-    document.body.classList.toggle("light", !darkMode);
-    btnDark.classList.toggle("active", darkMode);
-    btnLight.classList.toggle("active", !darkMode);
-    btnDark.setAttribute("aria-pressed", darkMode);
-    btnLight.setAttribute("aria-pressed", !darkMode);
-    faviconEl.href = darkMode ? "icon-dark.png" : "icon-light.png";
-  }
-
-  btnJa.addEventListener("click", () => setLang("ja"));
-  btnEn.addEventListener("click", () => setLang("en"));
-  btnLight.addEventListener("click", () => setMode(false));
-  btnDark.addEventListener("click", () => setMode(true));
-
-  setLang(currentLang);
-  setMode(darkMode);
-  updateInfo();
-
-  setInterval(updateInfo, 60000);
-  window.addEventListener("online", updateInfo);
-  window.addEventListener("offline", updateInfo);
-
-})();
-</script>
-</body>
+      setMode(darkMode);
+      updateInfo();
+      setInterval(updateInfo, 60000);
+    })();
+  </script></body>
 </html>
