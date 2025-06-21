@@ -126,6 +126,35 @@
     border-bottom-color: var(--accent-light);
   }
 
+  footer {
+    max-width: 720px;
+    width: 100%;
+    padding: 1rem 1rem 2rem;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    text-align: center;
+    user-select: none;
+    border-top: 1px solid var(--accent-dark);
+    margin-top: auto;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  body.light footer {
+    color: var(--text-light);
+    border-color: var(--accent-light);
+  }
+  footer a {
+    color: inherit;
+    text-decoration: underline;
+  }
+  footer a:hover,
+  footer a:focus {
+    color: var(--accent-dark);
+  }
+  body.light footer a:hover,
+  body.light footer a:focus {
+    color: var(--accent-light);
+  }
+
   @media (max-width: 480px) {
     body {
       font-size: 15px;
@@ -161,9 +190,14 @@
 
   <table aria-live="polite" aria-atomic="true" id="info-table">
     <tbody>
-      <!-- ここに動的に情報が入る -->
     </tbody>
   </table>
+
+  <footer>
+    © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener noreferrer">device-info.hamusata.f5.si</a><br />
+    使用ライブラリ: <a href="https://api.ipify.org" target="_blank" rel="noopener noreferrer">ipify API</a>, <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">JavaScript Web API</a><br />
+    表示される情報は一部、正確でない可能性があります。
+  </footer>
 
 <script>
 (() => {
@@ -443,35 +477,27 @@
 
   function setLang(lang) {
     currentLang = lang;
-    btnJa.classList.toggle("active", lang === "ja");
+    titleEl.textContent = dict[lang].title;
     btnJa.setAttribute("aria-pressed", lang === "ja");
-    btnEn.classList.toggle("active", lang === "en");
     btnEn.setAttribute("aria-pressed", lang === "en");
-    updateText();
     updateInfo();
   }
 
-  function setMode(isDark) {
-    darkMode = isDark;
-    if(darkMode) {
+  function setMode(dark) {
+    darkMode = dark;
+    if(dark) {
+      document.body.classList.add("dark");
       document.body.classList.remove("light");
       faviconEl.href = "icon-dark.png";
+      btnLight.setAttribute("aria-pressed", "false");
+      btnDark.setAttribute("aria-pressed", "true");
     } else {
       document.body.classList.add("light");
+      document.body.classList.remove("dark");
       faviconEl.href = "icon-light.png";
+      btnLight.setAttribute("aria-pressed", "true");
+      btnDark.setAttribute("aria-pressed", "false");
     }
-    btnDark.classList.toggle("active", isDark);
-    btnDark.setAttribute("aria-pressed", isDark);
-    btnLight.classList.toggle("active", !isDark);
-    btnLight.setAttribute("aria-pressed", !isDark);
-  }
-
-  function updateText() {
-    titleEl.textContent = dict[currentLang].title;
-    btnJa.textContent = dict[currentLang].langBtn.ja;
-    btnEn.textContent = dict[currentLang].langBtn.en;
-    btnLight.textContent = dict[currentLang].modeBtn.light;
-    btnDark.textContent = dict[currentLang].modeBtn.dark;
   }
 
   btnJa.addEventListener("click", () => setLang("ja"));
@@ -483,14 +509,12 @@
   setLang(currentLang);
   setMode(true);
 
-  // 1秒ごとに日時更新（IPやバッテリーは再取得しない）
+  // 1秒ごとに日時のみ更新
   setInterval(() => {
-    // 日時部分のみ更新のため簡易的に全更新（軽量なので問題なし）
     updateInfo();
   }, 1000);
 
 })();
 </script>
-
 </body>
 </html>
