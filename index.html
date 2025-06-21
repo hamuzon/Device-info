@@ -21,18 +21,37 @@
       background-color: var(--bg-dark);
       color: var(--text-dark);
       transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1rem;
-      min-height: 100vh;
+      padding: 0 1rem 2rem;
     }
     body.light {
       background-color: var(--bg-light);
       color: var(--text-light);
     }
+
+    header {
+      max-width: 700px;
+      width: 100%;
+      margin: 1rem auto 1.5rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      background: rgba(0, 116, 217, 0.15);
+      border-radius: 12px;
+      padding: 0.6rem 1rem;
+      color: var(--accent-dark);
+      user-select: none;
+      font-weight: 600;
+    }
+    body.light header {
+      background: rgba(26, 95, 255, 0.15);
+      color: var(--accent-light);
+    }
+
     h1 {
-      margin-bottom: 1rem;
+      margin: 0 0 1rem;
       font-size: 1.8rem;
       text-align: center;
       user-select: none;
@@ -114,11 +133,20 @@
       th, td {
         padding: 0.4rem 0.8rem;
       }
+      header {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
 <body>
+  <header aria-label="IP and Libraries info">
+    IPv4: ipify API (https://api.ipify.org) &nbsp;|&nbsp; IPv6: ipify API (https://api64.ipify.org) &nbsp;|&nbsp; 現在IPはIPv4を使用<br />
+    使用ライブラリ: ipify API, JavaScript Web API
+  </header>
+
   <h1 id="title">Device-info</h1>
+
   <div class="controls" role="group" aria-label="Language and Mode Switch">
     <button id="btn-ja" class="active" aria-pressed="true" type="button">日本語</button>
     <button id="btn-en" aria-pressed="false" type="button">English</button>
@@ -130,7 +158,6 @@
 
   <footer>
     © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener">device-info.hamusata.f5.si</a><br />
-    使用ライブラリ: <a href="https://api.ipify.org" target="_blank" rel="noopener">ipify API</a>, JavaScript Web API<br />
     表示される情報は一部、正確でない可能性があります。
   </footer>
 
@@ -227,7 +254,7 @@
           return { name: "macOS", version, device: "Mac" };
         }
         if (/Linux/.test(navigator.platform)) {
-          return { name: "Linux", version: dict[currentLang].unknown, device: "Linux端末" };
+          return { name: dict[currentLang].unknown, version: dict[currentLang].unknown, device: "Linux端末" };
         }
         return { name: dict[currentLang].unknown, version: dict[currentLang].unknown, device: dict[currentLang].unknown };
       }
@@ -259,7 +286,7 @@
           .then(data => data.ip || dict[currentLang].unknown)
           .catch(() => dict[currentLang].unknown);
 
-        // Cloudflare Pages対応で/ cdn-cgi/trace は使わず
+        // 現在IPはIPv4を代用
         const currentIP = ipv4;
 
         return { ipv4, ipv6, currentIP };
@@ -284,7 +311,6 @@
         const pixelDepth = screen.pixelDepth;
 
         const fetchedAt = new Date();
-        const now = new Date();
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || lang.unknown;
 
         const onlineStatus = navigator.onLine ? lang.online_yes : lang.online_no;
@@ -306,12 +332,23 @@
           [lang.ip, currentIP],
           [lang.online, onlineStatus],
           [lang.fetchedAt, fetchedAt.toLocaleString()],
-          [lang.now, now.toLocaleString()],
+          [lang.now, ''],
           [lang.timezone, timezone]
         ];
 
         for (const [label, value] of infoList) {
           table.appendChild(createRow(label, value));
+        }
+      }
+
+      function updateCurrentTime() {
+        const nowStr = new Date().toLocaleString();
+        const rows = table.querySelectorAll('tr');
+        for (const row of rows) {
+          if (row.firstElementChild?.textContent === dict[currentLang].now) {
+            row.lastElementChild.textContent = nowStr;
+            break;
+          }
         }
       }
 
@@ -335,17 +372,6 @@
         favicon.href = darkMode ? 'icon-dark.png' : 'icon-light.png';
       }
 
-      function updateCurrentTime() {
-        const nowStr = new Date().toLocaleString();
-        const rows = table.querySelectorAll('tr');
-        for (const row of rows) {
-          if (row.firstElementChild?.textContent === dict[currentLang].now) {
-            row.lastElementChild.textContent = nowStr;
-            break;
-          }
-        }
-      }
-
       btnJa.addEventListener('click', () => setLang('ja'));
       btnEn.addEventListener('click', () => setLang('en'));
       btnLight.addEventListener('click', () => setMode(false));
@@ -353,10 +379,9 @@
 
       setMode(darkMode);
       setLang(currentLang);
-      updateInfo();
 
-      setInterval(updateInfo, 60000); // 1分毎に情報を最新化
-      setInterval(updateCurrentTime, 1000); // 1秒毎に現在時刻更新
+      // 現在時刻だけを1秒ごとに更新
+      setInterval(updateCurrentTime, 1000);
     })();
   </script>
 </body>
