@@ -10,16 +10,14 @@
     --dark-bg: #001b33;
     --dark-text: #a3c4f3;
     --dark-accent: #4da6ff;
-    --dark-row-bg: #003366;
-
+    --dark-card-bg: #003366;
     --light-bg: #f5faff;
     --light-text: #0a1a33;
     --light-accent: #4d82ff;
-    --light-row-bg: #dbe9ff;
-
+    --light-card-bg: #dbe9ff;
     --border-radius: 12px;
     --font-family: 'Share Tech Mono', monospace;
-    --transition-duration: 0.3s;
+    --transition: 0.3s ease;
   }
   body {
     font-family: var(--font-family);
@@ -31,7 +29,7 @@
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    transition: background-color var(--transition-duration), color var(--transition-duration);
+    transition: background-color var(--transition), color var(--transition);
     font-size: 16px;
   }
   body.light {
@@ -39,43 +37,43 @@
     color: var(--light-text);
   }
   h1 {
-    margin-bottom: 1.2rem;
     font-weight: 700;
-    font-size: 1.8rem;
+    font-size: 2.0rem;
+    margin-bottom: 1.5rem;
     color: var(--dark-accent);
-    transition: color var(--transition-duration);
+    transition: color var(--transition);
   }
   body.light h1 {
     color: var(--light-accent);
   }
   .controls {
     display: flex;
+    gap: 0.7rem;
+    margin-bottom: 2rem;
     flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1.5rem;
     justify-content: center;
   }
   button {
-    min-width: 88px;
-    padding: 0.5rem 1rem;
     font-family: var(--font-family);
     font-size: 1rem;
-    border: 2px solid var(--dark-accent);
+    padding: 0.55rem 1.2rem;
     border-radius: var(--border-radius);
+    border: 2.5px solid var(--dark-accent);
     background: transparent;
     color: var(--dark-text);
     cursor: pointer;
-    transition: background-color var(--transition-duration), color var(--transition-duration), border-color var(--transition-duration);
     user-select: none;
+    transition: background-color var(--transition), border-color var(--transition), color var(--transition);
+    min-width: 90px;
   }
   button:hover, button:focus {
     background-color: var(--dark-accent);
-    color: #fff;
+    color: white;
     outline: none;
   }
   button.active {
     background-color: var(--dark-accent);
-    color: #fff;
+    color: white;
     border-color: var(--dark-accent);
   }
   body.light button {
@@ -84,56 +82,75 @@
   }
   body.light button:hover, body.light button:focus {
     background-color: var(--light-accent);
-    color: #fff;
+    color: white;
     outline: none;
   }
   body.light button.active {
     background-color: var(--light-accent);
-    color: #fff;
+    color: white;
     border-color: var(--light-accent);
   }
-  table {
+  main {
     width: 100%;
     max-width: 720px;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
   }
-  tbody tr {
-    background-color: var(--dark-row-bg);
+  section.card {
+    background-color: var(--dark-card-bg);
     border-radius: var(--border-radius);
-    box-shadow: 0 1px 5px rgba(0,0,0,0.3);
-    display: table-row;
+    padding: 1.3rem 1.8rem;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.25);
+    transition: background-color var(--transition);
   }
-  body.light tbody tr {
-    background-color: var(--light-row-bg);
+  body.light section.card {
+    background-color: var(--light-card-bg);
     box-shadow: none;
   }
-  th, td {
-    padding: 0.85rem 1.2rem;
-    text-align: left;
-    vertical-align: middle;
-  }
-  th {
-    font-weight: 700;
+  section.card h2 {
+    margin: 0 0 1rem 0;
     color: var(--dark-accent);
-    border-bottom: 2px solid var(--dark-accent);
+    font-weight: 700;
+    font-size: 1.3rem;
+    border-bottom: 2.5px solid var(--dark-accent);
+    padding-bottom: 0.3rem;
+    transition: color var(--transition), border-color var(--transition);
   }
-  body.light th {
+  body.light section.card h2 {
     color: var(--light-accent);
     border-color: var(--light-accent);
+  }
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(120px, 30%) 1fr;
+    row-gap: 0.7rem;
+    column-gap: 1rem;
+  }
+  dt {
+    font-weight: 600;
+    align-self: center;
+    color: var(--dark-accent);
+  }
+  body.light dt {
+    color: var(--light-accent);
+  }
+  dd {
+    margin: 0;
+    word-break: break-word;
   }
   footer {
     max-width: 720px;
     width: 100%;
-    padding: 1.2rem 1rem 2rem;
+    padding: 1.5rem 1rem 2rem;
     font-size: 0.85rem;
     color: var(--dark-text);
     text-align: center;
     user-select: none;
     border-top: 1px solid var(--dark-accent);
     margin-top: auto;
-    transition: color var(--transition-duration), border-color var(--transition-duration);
+    transition: color var(--transition), border-color var(--transition);
   }
   body.light footer {
     color: var(--light-text);
@@ -157,23 +174,28 @@
       padding: 1rem 0.8rem 2rem;
     }
     h1 {
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      margin-bottom: 1.2rem;
     }
     .controls {
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
     button {
-      min-width: 72px;
+      min-width: 70px;
       font-size: 0.95rem;
-      padding: 0.4rem 0.9rem;
+      padding: 0.4rem 1rem;
     }
-    table {
-      font-size: 0.9rem;
-      border-spacing: 0 6px;
+    section.card {
+      padding: 1rem 1.2rem;
     }
-    th, td {
-      padding: 0.7rem 1rem;
+    section.card h2 {
+      font-size: 1.15rem;
+      border-bottom-width: 2px;
+    }
+    dl {
+      grid-template-columns: 1fr 2fr;
+      column-gap: 0.8rem;
+      row-gap: 0.5rem;
     }
   }
 </style>
@@ -188,9 +210,32 @@
     <button id="btn-dark" type="button" aria-pressed="true" class="active">ダーク</button>
   </div>
 
-  <table aria-live="polite" aria-atomic="true" id="info-table">
-    <tbody></tbody>
-  </table>
+  <main>
+    <section class="card" aria-labelledby="os-info-title">
+      <h2 id="os-info-title">OS 情報</h2>
+      <dl id="os-info"></dl>
+    </section>
+    <section class="card" aria-labelledby="browser-info-title">
+      <h2 id="browser-info-title">ブラウザ情報</h2>
+      <dl id="browser-info"></dl>
+    </section>
+    <section class="card" aria-labelledby="display-info-title">
+      <h2 id="display-info-title">表示・システム情報</h2>
+      <dl id="display-info"></dl>
+    </section>
+    <section class="card" aria-labelledby="battery-info-title">
+      <h2 id="battery-info-title">バッテリー</h2>
+      <dl id="battery-info"></dl>
+    </section>
+    <section class="card" aria-labelledby="network-info-title">
+      <h2 id="network-info-title">ネットワーク</h2>
+      <dl id="network-info"></dl>
+    </section>
+    <section class="card" aria-labelledby="date-info-title">
+      <h2 id="date-info-title">日時</h2>
+      <dl id="date-info"></dl>
+    </section>
+  </main>
 
   <footer>
     © 2025 <a href="https://device-info.hamusata.f5.si" target="_blank" rel="noopener noreferrer">device-info.hamusata.f5.si</a><br />
@@ -205,78 +250,62 @@
   const dict = {
     ja: {
       title: "デバイス情報",
-      osInfo: "OS 情報",
       osName: "OS名",
       osVersion: "バージョン",
       deviceName: "端末名",
-      browserInfo: "ブラウザ情報",
       browserName: "ブラウザ",
       userAgent: "ユーザーエージェント",
       language: "言語",
-      displayInfo: "表示・システム情報",
       screenRes: "画面解像度",
       viewport: "ビューポート",
       colorDepth: "色深度",
       pixelDepth: "ピクセル深度",
       cpuCores: "CPUコア数",
       memory: "メモリ",
-      battery: "バッテリー",
+      batteryLevel: "バッテリー残量",
       touchSupport: "タッチ対応",
-      networkInfo: "ネットワーク",
       ipv6: "IPv6アドレス",
       ipv4: "IPv4アドレス",
       currentIP: "現在使用IP",
       onlineStatus: "オンライン状態",
-      dateTime: "日時",
       fetchedAt: "取得時刻",
       now: "現在時刻",
       timezone: "タイムゾーン",
-      langBtn: { ja: "日本語", en: "English" },
-      modeBtn: { light: "ライト", dark: "ダーク" },
       online: "オンライン",
       offline: "オフライン",
       batteryUnsupported: "非対応",
       touchYes: "あり",
       touchNo: "なし",
-      ipFetching: "取得中...",
       ipFailed: "取得失敗",
     },
     en: {
       title: "Device Info",
-      osInfo: "OS Information",
       osName: "OS Name",
       osVersion: "Version",
       deviceName: "Device",
-      browserInfo: "Browser Information",
       browserName: "Browser",
       userAgent: "User Agent",
       language: "Language",
-      displayInfo: "Display & System Info",
       screenRes: "Screen Resolution",
       viewport: "Viewport",
       colorDepth: "Color Depth",
       pixelDepth: "Pixel Depth",
       cpuCores: "CPU Cores",
       memory: "Memory",
-      battery: "Battery",
+      batteryLevel: "Battery Level",
       touchSupport: "Touch Support",
-      networkInfo: "Network",
       ipv6: "IPv6 Address",
       ipv4: "IPv4 Address",
       currentIP: "Current IP",
       onlineStatus: "Online Status",
-      dateTime: "Date & Time",
       fetchedAt: "Fetched At",
       now: "Current Time",
       timezone: "Timezone",
-      langBtn: { ja: "Japanese", en: "English" },
-      modeBtn: { light: "Light", dark: "Dark" },
       online: "Online",
       offline: "Offline",
       batteryUnsupported: "Unsupported",
       touchYes: "Yes",
       touchNo: "No",
-      ipFetching: "Fetching...",
       ipFailed: "Failed",
     }
   };
@@ -285,12 +314,18 @@
   let darkMode = true;
 
   const titleEl = document.getElementById('title');
-  const tableBody = document.querySelector('#info-table tbody');
   const btnJa = document.getElementById('btn-ja');
   const btnEn = document.getElementById('btn-en');
   const btnLight = document.getElementById('btn-light');
   const btnDark = document.getElementById('btn-dark');
   const faviconEl = document.getElementById('favicon');
+
+  const osInfoDl = document.getElementById('os-info');
+  const browserInfoDl = document.getElementById('browser-info');
+  const displayInfoDl = document.getElementById('display-info');
+  const batteryInfoDl = document.getElementById('battery-info');
+  const networkInfoDl = document.getElementById('network-info');
+  const dateInfoDl = document.getElementById('date-info');
 
   function detectOS() {
     const ua = navigator.userAgent;
@@ -366,10 +401,10 @@
   }
 
   function getBattery() {
-    if (!navigator.getBattery) return dict[currentLang].batteryUnsupported;
+    if (!navigator.getBattery) return Promise.resolve(dict[currentLang].batteryUnsupported);
     return navigator.getBattery().then(batt => {
       const level = Math.round(batt.level * 100);
-      return `${level}% ${batt.charging ? "(充電中)" : ""}`.trim();
+      return `${level}% ${batt.charging ? "(charging)" : ""}`.trim();
     }).catch(() => dict[currentLang].batteryUnsupported);
   }
 
@@ -389,7 +424,6 @@
         const data = await res.json();
         return data.ip || dict[currentLang].ipFailed;
       } else if (method === "ipv6") {
-        // ipify.org のIPv6は同じAPIで取れるがIPがIPv6の場合のみ。
         const res = await fetch("https://api64.ipify.org?format=json");
         const data = await res.json();
         return data.ip || dict[currentLang].ipFailed;
@@ -405,70 +439,61 @@
     return `UTC${offset >= 0 ? "+" : ""}${offset}`;
   }
 
-  function createRow(label, value) {
-    const tr = document.createElement("tr");
-    const th = document.createElement("th");
-    const td = document.createElement("td");
-    th.textContent = label;
-    td.textContent = value;
-    tr.appendChild(th);
-    tr.appendChild(td);
-    return tr;
+  function clearDl(dl) {
+    while(dl.firstChild) dl.removeChild(dl.firstChild);
+  }
+  function appendDl(dl, label, value) {
+    const dt = document.createElement("dt");
+    const dd = document.createElement("dd");
+    dt.textContent = label;
+    dd.textContent = value;
+    dl.appendChild(dt);
+    dl.appendChild(dd);
   }
 
   async function updateInfo() {
-    tableBody.innerHTML = ""; // クリア
-
-    // OS情報
     const os = detectOS();
-    tableBody.appendChild(createRow(dict[currentLang].osInfo, ""));
-    tableBody.appendChild(createRow(dict[currentLang].osName, os.name));
-    tableBody.appendChild(createRow(dict[currentLang].osVersion, os.version));
-    tableBody.appendChild(createRow(dict[currentLang].deviceName, os.device));
-
-    // ブラウザ情報
     const browser = getBrowser();
-    tableBody.appendChild(createRow(dict[currentLang].browserInfo, ""));
-    tableBody.appendChild(createRow(dict[currentLang].browserName, browser));
-    tableBody.appendChild(createRow(dict[currentLang].userAgent, navigator.userAgent));
-    tableBody.appendChild(createRow(dict[currentLang].language, navigator.language || navigator.userLanguage || ""));
-
-    // 表示・システム情報
     const display = getDisplayInfo();
-    tableBody.appendChild(createRow(dict[currentLang].displayInfo, ""));
-    tableBody.appendChild(createRow(dict[currentLang].screenRes, display.screen));
-    tableBody.appendChild(createRow(dict[currentLang].viewport, display.viewport));
-    tableBody.appendChild(createRow(dict[currentLang].colorDepth, display.colorDepth));
-    tableBody.appendChild(createRow(dict[currentLang].pixelDepth, display.pixelDepth));
-    tableBody.appendChild(createRow(dict[currentLang].cpuCores, getCPU()));
-    tableBody.appendChild(createRow(dict[currentLang].memory, getMemory()));
-    tableBody.appendChild(createRow(dict[currentLang].touchSupport, getTouchSupport()));
-
-    // バッテリー (async)
     const batteryVal = await getBattery();
-    tableBody.appendChild(createRow(dict[currentLang].battery, batteryVal));
-
-    // ネットワーク情報
-    tableBody.appendChild(createRow(dict[currentLang].networkInfo, ""));
-    // IPv6
     const ipv6 = await getIP("ipv6");
-    tableBody.appendChild(createRow(dict[currentLang].ipv6, ipv6));
-    // IPv4
     const ipv4 = await getIP("ipv4");
-    tableBody.appendChild(createRow(dict[currentLang].ipv4, ipv4));
-    // 現在使用IP (Cloudflare)
     const currentIP = await getIP("cloudflare");
-    tableBody.appendChild(createRow(dict[currentLang].currentIP, currentIP));
-    // オンライン状態
-    tableBody.appendChild(createRow(dict[currentLang].onlineStatus, navigator.onLine ? dict[currentLang].online : dict[currentLang].offline));
-
-    // 日時
     const fetchedAt = new Date();
     const now = new Date();
-    tableBody.appendChild(createRow(dict[currentLang].dateTime, ""));
-    tableBody.appendChild(createRow(dict[currentLang].fetchedAt, fetchedAt.toLocaleString()));
-    tableBody.appendChild(createRow(dict[currentLang].now, now.toLocaleString()));
-    tableBody.appendChild(createRow(dict[currentLang].timezone, getTimezone()));
+
+    clearDl(osInfoDl);
+    appendDl(osInfoDl, dict[currentLang].osName, os.name);
+    appendDl(osInfoDl, dict[currentLang].osVersion, os.version);
+    appendDl(osInfoDl, dict[currentLang].deviceName, os.device);
+
+    clearDl(browserInfoDl);
+    appendDl(browserInfoDl, dict[currentLang].browserName, browser);
+    appendDl(browserInfoDl, dict[currentLang].userAgent, navigator.userAgent);
+    appendDl(browserInfoDl, dict[currentLang].language, navigator.language);
+
+    clearDl(displayInfoDl);
+    appendDl(displayInfoDl, dict[currentLang].screenRes, display.screen);
+    appendDl(displayInfoDl, dict[currentLang].viewport, display.viewport);
+    appendDl(displayInfoDl, dict[currentLang].colorDepth, display.colorDepth);
+    appendDl(displayInfoDl, dict[currentLang].pixelDepth, display.pixelDepth);
+    appendDl(displayInfoDl, dict[currentLang].cpuCores, getCPU());
+    appendDl(displayInfoDl, dict[currentLang].memory, getMemory());
+    appendDl(displayInfoDl, dict[currentLang].touchSupport, getTouchSupport());
+
+    clearDl(batteryInfoDl);
+    appendDl(batteryInfoDl, dict[currentLang].batteryLevel, batteryVal);
+
+    clearDl(networkInfoDl);
+    appendDl(networkInfoDl, dict[currentLang].ipv6, ipv6);
+    appendDl(networkInfoDl, dict[currentLang].ipv4, ipv4);
+    appendDl(networkInfoDl, dict[currentLang].currentIP, currentIP);
+    appendDl(networkInfoDl, dict[currentLang].onlineStatus, navigator.onLine ? dict[currentLang].online : dict[currentLang].offline);
+
+    clearDl(dateInfoDl);
+    appendDl(dateInfoDl, dict[currentLang].fetchedAt, fetchedAt.toLocaleString());
+    appendDl(dateInfoDl, dict[currentLang].now, now.toLocaleString());
+    appendDl(dateInfoDl, dict[currentLang].timezone, getTimezone());
   }
 
   function setLang(lang) {
@@ -492,21 +517,16 @@
     faviconEl.href = darkMode ? "icon-dark.png" : "icon-light.png";
   }
 
-  // イベント設定
   btnJa.addEventListener("click", () => setLang("ja"));
   btnEn.addEventListener("click", () => setLang("en"));
   btnLight.addEventListener("click", () => setMode(false));
   btnDark.addEventListener("click", () => setMode(true));
 
-  // 初期セットアップ
   setLang(currentLang);
   setMode(darkMode);
   updateInfo();
 
-  // 1分毎に情報更新（バッテリーなどの動的情報用）
-  setInterval(updateInfo, 60_000);
-
-  // オンライン/オフライン時の再描画
+  setInterval(updateInfo, 60000);
   window.addEventListener("online", updateInfo);
   window.addEventListener("offline", updateInfo);
 
