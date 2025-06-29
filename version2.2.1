@@ -220,16 +220,8 @@
   </section>
 
   <footer>
-    <div id="footer-copyright">
-      &copy; 2025 
-      <span id="footer-hamusata">
-        <a href="https://home.hamusata.f5.si" target="_blank" rel="noopener noreferrer">@hamusata</a>
-      </span>
-      <span id="footer-hamuzon" style="display: none;">
-        <a href="https://github.com/Hamuzon" target="_blank" rel="noopener noreferrer">@hamuzon</a>
-      </span>
-    </div>
-    <div id="footer-warning">表示される情報は一部、正確でない可能性があります。</div>
+    <div id="footer-copyright"></div>
+    <div id="footer-warning"></div>
     <div id="footer-library">
       使用ライブラリ: <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, JavaScript Web API
     </div>
@@ -345,17 +337,17 @@
       function detectOS() {
         const ua = navigator.userAgent;
         if (/Android/.test(ua)) {
-          const version = (ua.match(/Android\\s+([\\d.]+)/) || [])[1] || dict[currentLang].unknown;
-          const model = (ua.match(/;\\s?([^;\\/]+)\\s+Build/i) || [])[1] || dict[currentLang].unknown;
+          const version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || dict[currentLang].unknown;
+          const model = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || dict[currentLang].unknown;
           return { name: "Android", version, device: model };
         }
         if (/iPhone|iPad|iPod/.test(ua)) {
-          const version = (ua.match(/OS (\\d+)[_.](\\d+)/) || [])[1] || dict[currentLang].unknown;
+          const version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || dict[currentLang].unknown;
           const model = /iPhone/.test(ua) ? "iPhone" : "iPad";
           return { name: model === "iPhone" ? "iOS" : "iPadOS", version, device: model };
         }
         if (/Windows NT/.test(ua)) {
-          const ver = (ua.match(/Windows NT ([\\d.]+)/) || [])[1];
+          const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
           const map = {
             "10.0": "10 / 11",
             "6.3": "8.1",
@@ -367,7 +359,7 @@
           return { name: "Windows", version: map[ver] || ver || dict[currentLang].unknown, device: "PC" };
         }
         if (/Mac OS X/.test(ua)) {
-          const version = (ua.match(/Mac OS X (\\d+[_\\.]\\d+)/) || [])[1]?.replace(/_/g, ".") || dict[currentLang].unknown;
+          const version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || dict[currentLang].unknown;
           return { name: "macOS", version, device: "Mac" };
         }
         if (/Linux/.test(navigator.platform)) {
@@ -378,17 +370,17 @@
 
       function getBrowser() {
         const ua = navigator.userAgent;
-        if (/Edg\\//.test(ua)) return "Microsoft Edge";
-        if (/OPR\\//.test(ua)) return "Opera";
-        if (/Chrome\\//.test(ua)) return "Chrome";
-        if (/Firefox\\//.test(ua)) return "Firefox";
+        if (/Edg\//.test(ua)) return "Microsoft Edge";
+        if (/OPR\//.test(ua)) return "Opera";
+        if (/Chrome\//.test(ua)) return "Chrome";
+        if (/Firefox\//.test(ua)) return "Firefox";
         if (/Safari/.test(ua) && !/Chrome/.test(ua)) return "Safari";
         return dict[currentLang].unknown;
       }
 
       function createRow(label, value) {
         const row = document.createElement('tr');
-        row.innerHTML = `<th scope=\"row\">${label}</th><td>${value}</td>`;
+        row.innerHTML = `<th scope="row">${label}</th><td>${value}</td>`;
         return row;
       }
 
@@ -470,77 +462,104 @@
           [lang.ip, currentIP],
           [lang.online, onlineStatus],
           [lang.language, language],
-          [lang.cookiesEnabled, cookiesEnabled]
+          [lang.cookiesEnabled, cookiesEnabled],
+          [lang.fetchedAt, fetchedAt.toLocaleString(currentLang)],
+          [lang.timezone, timezone]
         ].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
 
         // その他テーブル
         [
-          [lang.fetchedAt, fetchedAt.toLocaleString(currentLang)],
-          [lang.now, new Date().toLocaleString(currentLang)],
-          [lang.timezone, timezone]
+          ["User Agent Length", ua.length],
+          ["Platform", navigator.platform || lang.unknown],
+          ["Vendor", navigator.vendor || lang.unknown],
+          ["Online Event Supported", "ononline" in window ? "Yes" : "No"],
+          ["Offline Event Supported", "onoffline" in window ? "Yes" : "No"]
         ].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
 
-        headerEl.textContent = `${lang.title} - IP: ${currentIP}`;
+        // ヘッダーIPとライブラリ情報
+        headerEl.textContent = `${lang.ip}: ${currentIP} | Libraries: ipify API, JavaScript Web API`;
+
+        // タイトル
         titleEl.textContent = lang.title;
-        footerCopyright.textContent = lang.footer?.copyright || "";
-        footerWarning.textContent = lang.footer?.warning || "";
-        footerLibrary.innerHTML = `使用ライブラリ: <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, JavaScript Web API`;
-      }
 
-      function setLang(lang) {
-        currentLang = lang;
-        localStorage.setItem("lang", lang);
-        if (lang === "ja") {
-          btnJa.classList.add("active");
-          btnJa.setAttribute("aria-pressed", "true");
-          btnEn.classList.remove("active");
-          btnEn.setAttribute("aria-pressed", "false");
+        // フッター警告
+        footerWarning.textContent = lang.footer.warning;
+
+        // フッターライブラリは固定
+
+        // フッター著作権表示
+        const hostname = location.hostname;
+        let footerCopyrightText = '© 2025 ';
+        if(hostname.endsWith('github.io')){
+          footerCopyrightText +=
+            '<a href="https://hamuzon.github.io" target="_blank" rel="noopener noreferrer">@hamuzon</a> (hamuzon.github.io)';
+        } else if(hostname.endsWith('hamusata.f5.si')){
+          footerCopyrightText +=
+            '<a href="https://home.hamusata.f5.si" target="_blank" rel="noopener noreferrer">@hamusata</a> (home.hamusata.f5.si)';
         } else {
-          btnEn.classList.add("active");
-          btnEn.setAttribute("aria-pressed", "true");
-          btnJa.classList.remove("active");
-          btnJa.setAttribute("aria-pressed", "false");
+          footerCopyrightText += 'device-info';
         }
-        updateInfo();
+        footerCopyright.innerHTML = footerCopyrightText;
+
+        // 言語ボタン状態更新
+        btnJa.classList.toggle('active', currentLang === 'ja');
+        btnEn.classList.toggle('active', currentLang === 'en');
+        btnJa.setAttribute('aria-pressed', currentLang === 'ja');
+        btnEn.setAttribute('aria-pressed', currentLang === 'en');
+
+        // モード切替反映
+        if(darkMode){
+          document.body.classList.remove('light');
+          favicon.href = 'icon-dark.png';
+          btnDark.classList.add('active');
+          btnLight.classList.remove('active');
+          btnDark.setAttribute('aria-pressed', 'true');
+          btnLight.setAttribute('aria-pressed', 'false');
+        } else {
+          document.body.classList.add('light');
+          favicon.href = 'icon-light.png';
+          btnDark.classList.remove('active');
+          btnLight.classList.add('active');
+          btnDark.setAttribute('aria-pressed', 'false');
+          btnLight.setAttribute('aria-pressed', 'true');
+        }
       }
 
-      function setMode(mode) {
-        darkMode = mode === "dark";
-        localStorage.setItem("mode", darkMode ? "dark" : "light");
+      btnJa.addEventListener('click', () => {
+        if (currentLang !== 'ja') {
+          currentLang = 'ja';
+          localStorage.setItem('lang', 'ja');
+          updateInfo();
+        }
+      });
+      btnEn.addEventListener('click', () => {
+        if (currentLang !== 'en') {
+          currentLang = 'en';
+          localStorage.setItem('lang', 'en');
+          updateInfo();
+        }
+      });
+
+      btnLight.addEventListener('click', () => {
         if (darkMode) {
-          document.body.classList.remove("light");
-          favicon.href = "icon-dark.png";
-          btnDark.classList.add("active");
-          btnDark.setAttribute("aria-pressed", "true");
-          btnLight.classList.remove("active");
-          btnLight.setAttribute("aria-pressed", "false");
-        } else {
-          document.body.classList.add("light");
-          favicon.href = "icon-light.png";
-          btnLight.classList.add("active");
-          btnLight.setAttribute("aria-pressed", "true");
-          btnDark.classList.remove("active");
-          btnDark.setAttribute("aria-pressed", "false");
+          darkMode = false;
+          localStorage.setItem('mode', 'light');
+          updateInfo();
         }
-      }
+      });
+      btnDark.addEventListener('click', () => {
+        if (!darkMode) {
+          darkMode = true;
+          localStorage.setItem('mode', 'dark');
+          updateInfo();
+        }
+      });
 
-      // 初期化
-      setLang(currentLang);
-      setMode(darkMode ? "dark" : "light");
+      window.addEventListener('online', updateInfo);
+      window.addEventListener('offline', updateInfo);
 
-      // イベント
-      btnJa.addEventListener("click", () => setLang("ja"));
-      btnEn.addEventListener("click", () => setLang("en"));
-      btnLight.addEventListener("click", () => setMode("light"));
-      btnDark.addEventListener("click", () => setMode("dark"));
-
-      // オンライン状態変更イベントで再描画
-      window.addEventListener("online", updateInfo);
-      window.addEventListener("offline", updateInfo);
-
-      // 定期更新(5分ごと)
-      setInterval(updateInfo, 300000);
-
+      // 初期実行
+      updateInfo();
     })();
   </script>
 </body>
