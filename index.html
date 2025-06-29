@@ -204,10 +204,10 @@
     <table id="table-screen" role="table" aria-label="Screen Information"></table>
   </section>
 
-  <section aria-labelledby="cat-cpu">
-    <h2 id="cat-cpu">CPU・メモリ / CPU & Memory</h2>
-    <table id="table-cpu" role="table" aria-label="CPU and Memory Information"></table>
-  </section>
+<section aria-labelledby="cat-cpu">
+  <h2 id="cat-cpu">CPU・メモリ / CPU & Memory</h2>
+  <table id="table-cpu" role="table" aria-label="CPU and Memory Information"></table>
+</section>
 
   <section aria-labelledby="cat-network">
     <h2 id="cat-network">ネットワーク情報 / Network Info</h2>
@@ -220,8 +220,8 @@
   </section>
 
   <footer>
-    <div id="footer-copyright"></div>
-    <div id="footer-warning"></div>
+    <div id="footer-copyright">© 2025 device-info/div>
+    <div id="footer-warning">表示される情報は一部、正確でない可能性があります。</div>
     <div id="footer-library">
       使用ライブラリ: <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, JavaScript Web API
     </div>
@@ -460,106 +460,72 @@
           [lang.ipv4, ipv4],
           [lang.ipv6, ipv6],
           [lang.ip, currentIP],
-          [lang.online, onlineStatus],
-          [lang.language, language],
-          [lang.cookiesEnabled, cookiesEnabled],
-          [lang.fetchedAt, fetchedAt.toLocaleString(currentLang)],
-          [lang.timezone, timezone]
+          [lang.online, onlineStatus]
         ].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
 
         // その他テーブル
         [
-          ["User Agent Length", ua.length],
-          ["Platform", navigator.platform || lang.unknown],
-          ["Vendor", navigator.vendor || lang.unknown],
-          ["Online Event Supported", "ononline" in window ? "Yes" : "No"],
-          ["Offline Event Supported", "onoffline" in window ? "Yes" : "No"]
+          [lang.language, language],
+          [lang.cookiesEnabled, cookiesEnabled],
+          [lang.fetchedAt, fetchedAt.toLocaleString()],
+          [lang.now, ''],
+          [lang.timezone, timezone]
         ].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
 
-        // ヘッダーIPとライブラリ情報
-        headerEl.textContent = `${lang.ip}: ${currentIP} | Libraries: ipify API, JavaScript Web API`;
-
-        // タイトル
-        titleEl.textContent = lang.title;
-
-        // フッター警告
+        footerCopyright.textContent = lang.footer.copyright;
         footerWarning.textContent = lang.footer.warning;
+        footerLibrary.innerHTML = currentLang === 'ja'
+          ? `使用ライブラリ: <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, JavaScript Web API`
+          : `Libraries used: <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, JavaScript Web API`;
+      }
 
-        // フッターライブラリは固定
-
-        // フッター著作権表示
-        const hostname = location.hostname;
-        let footerCopyrightText = '© 2025 ';
-        if(hostname.endsWith('github.io')){
-          footerCopyrightText +=
-            '<a href="https://hamuzon.github.io" target="_blank" rel="noopener noreferrer">@hamuzon</a>;
-        } else if(hostname.endsWith('hamusata.f5.si')){
-          footerCopyrightText +=
-            '<a href="https://home.hamusata.f5.si" target="_blank" rel="noopener noreferrer">@hamusata</a>;
-        } else {
-          footerCopyrightText += 'device-info';
-        }
-        footerCopyright.innerHTML = footerCopyrightText;
-
-        // 言語ボタン状態更新
-        btnJa.classList.toggle('active', currentLang === 'ja');
-        btnEn.classList.toggle('active', currentLang === 'en');
-        btnJa.setAttribute('aria-pressed', currentLang === 'ja');
-        btnEn.setAttribute('aria-pressed', currentLang === 'en');
-
-        // モード切替反映
-        if(darkMode){
-          document.body.classList.remove('light');
-          favicon.href = 'icon-dark.png';
-          btnDark.classList.add('active');
-          btnLight.classList.remove('active');
-          btnDark.setAttribute('aria-pressed', 'true');
-          btnLight.setAttribute('aria-pressed', 'false');
-        } else {
-          document.body.classList.add('light');
-          favicon.href = 'icon-light.png';
-          btnDark.classList.remove('active');
-          btnLight.classList.add('active');
-          btnDark.setAttribute('aria-pressed', 'false');
-          btnLight.setAttribute('aria-pressed', 'true');
+      function updateCurrentTime() {
+        const nowStr = new Date().toLocaleString();
+        const rows = tables.other.querySelectorAll('tr');
+        for (const row of rows) {
+          if (row.firstElementChild?.textContent === dict[currentLang].now) {
+            row.lastElementChild.textContent = nowStr;
+            break;
+          }
         }
       }
 
-      btnJa.addEventListener('click', () => {
-        if (currentLang !== 'ja') {
-          currentLang = 'ja';
-          localStorage.setItem('lang', 'ja');
-          updateInfo();
-        }
-      });
-      btnEn.addEventListener('click', () => {
-        if (currentLang !== 'en') {
-          currentLang = 'en';
-          localStorage.setItem('lang', 'en');
-          updateInfo();
-        }
-      });
+      function setLang(lang) {
+        currentLang = lang;
+        localStorage.setItem("lang", lang);
+        titleEl.textContent = dict[lang].title;
+        // セクションタイトルも切替
+        Object.entries(dict[lang].category).forEach(([key, label]) => {
+          const h2 = document.getElementById(`cat-${key}`);
+          if(h2) h2.textContent = label;
+        });
 
-      btnLight.addEventListener('click', () => {
-        if (darkMode) {
-          darkMode = false;
-          localStorage.setItem('mode', 'light');
-          updateInfo();
-        }
-      });
-      btnDark.addEventListener('click', () => {
-        if (!darkMode) {
-          darkMode = true;
-          localStorage.setItem('mode', 'dark');
-          updateInfo();
-        }
-      });
+        btnJa.classList.toggle('active', lang === 'ja');
+        btnEn.classList.toggle('active', lang === 'en');
+        btnJa.setAttribute('aria-pressed', lang === 'ja');
+        btnEn.setAttribute('aria-pressed', lang === 'en');
+        updateInfo();
+      }
 
-      window.addEventListener('online', updateInfo);
-      window.addEventListener('offline', updateInfo);
+      function setMode(isDark) {
+        darkMode = isDark;
+        localStorage.setItem("mode", isDark ? "dark" : "light");
+        document.body.classList.toggle('light', !darkMode);
+        btnLight.classList.toggle('active', !darkMode);
+        btnDark.classList.toggle('active', darkMode);
+        btnLight.setAttribute('aria-pressed', !darkMode);
+        btnDark.setAttribute('aria-pressed', darkMode);
+        favicon.href = isDark ? 'icon-dark.png' : 'icon-light.png';
+      }
 
-      // 初期実行
-      updateInfo();
+      btnJa.addEventListener('click', () => setLang('ja'));
+      btnEn.addEventListener('click', () => setLang('en'));
+      btnLight.addEventListener('click', () => setMode(false));
+      btnDark.addEventListener('click', () => setMode(true));
+
+      setMode(darkMode);
+      setLang(currentLang);
+      setInterval(updateCurrentTime, 1000);
     })();
   </script>
 </body>
