@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#001b33" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f0f0f0" media="(prefers-color-scheme: light)">
   <style>
+    /* --- 省略: CSSは元のまま --- */
     :root {
       --bg-dark: #001b33;
       --bg-light: #f0f0f0;
@@ -205,10 +206,10 @@
     <table id="table-screen" role="table" aria-label="Screen Information"></table>
   </section>
 
-<section aria-labelledby="cat-cpu">
-  <h2 id="cat-cpu">CPU・メモリ / CPU & Memory</h2>
-  <table id="table-cpu" role="table" aria-label="CPU and Memory Information"></table>
-</section>
+  <section aria-labelledby="cat-cpu">
+    <h2 id="cat-cpu">CPU・メモリ / CPU & Memory</h2>
+    <table id="table-cpu" role="table" aria-label="CPU and Memory Information"></table>
+  </section>
 
   <section aria-labelledby="cat-network">
     <h2 id="cat-network">ネットワーク情報 / Network Info</h2>
@@ -335,38 +336,63 @@
         other: document.getElementById('table-other')
       };
 
-      function detectOS() {
+      // ---- 修正版 detectOS ----
+      async function detectOS() {
         const ua = navigator.userAgent;
-        if (/Android/.test(ua)) {
-          const version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || dict[currentLang].unknown;
-          const model = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || dict[currentLang].unknown;
-          return { name: "Android", version, device: model };
+        let name = dict[currentLang].unknown;
+        let version = dict[currentLang].unknown;
+        let device = dict[currentLang].unknown;
+
+        // UA-CHが利用可能なら高精度情報を取得
+        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+          try {
+            const data = await navigator.userAgentData.getHighEntropyValues([
+              'platform', 'platformVersion', 'model'
+            ]);
+            if (data.platform) name = data.platform;
+            if (data.platformVersion) version = data.platformVersion;
+            if (data.model && data.model !== "") device = data.model;
+          } catch (e) {/* UA-CH未対応ブラウザは無視 */}
         }
-        if (/iPhone|iPad|iPod/.test(ua)) {
-          const version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || dict[currentLang].unknown;
-          const model = /iPhone/.test(ua) ? "iPhone" : "iPad";
-          return { name: model === "iPhone" ? "iOS" : "iPadOS", version, device: model };
+
+        // UA-CHで不足の場合はUAパターンで補完
+        if (name === dict[currentLang].unknown || version === dict[currentLang].unknown) {
+          if (/Android/.test(ua)) {
+            name = "Android";
+            version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version;
+            device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device;
+          } else if (/iPhone|iPad|iPod/.test(ua)) {
+            version = (ua.match(/OS (\d+)[_.](\d+)/) || [])[1] || version;
+            device = /iPhone/.test(ua) ? "iPhone" : "iPad";
+            name = device === "iPhone" ? "iOS" : "iPadOS";
+          } else if (/Windows NT/.test(ua)) {
+            const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
+            const map = {
+              "10.0": "10 / 11",
+              "6.3": "8.1",
+              "6.2": "8",
+              "6.1": "7",
+              "6.0": "Vista",
+              "5.1": "XP"
+            };
+            name = "Windows";
+            version = map[ver] || ver || version;
+            device = "PC";
+          } else if (/Mac OS X/.test(ua)) {
+            name = "macOS";
+            version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || version;
+            device = "Mac";
+          } else if (/Linux/.test(navigator.platform)) {
+            name = "Linux";
+            device = "Linux端末";
+          }
         }
-        if (/Windows NT/.test(ua)) {
-          const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
-          const map = {
-            "10.0": "10 / 11",
-            "6.3": "8.1",
-            "6.2": "8",
-            "6.1": "7",
-            "6.0": "Vista",
-            "5.1": "XP"
-          };
-          return { name: "Windows", version: map[ver] || ver || dict[currentLang].unknown, device: "PC" };
-        }
-        if (/Mac OS X/.test(ua)) {
-          const version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || dict[currentLang].unknown;
-          return { name: "macOS", version, device: "Mac" };
-        }
-        if (/Linux/.test(navigator.platform)) {
-          return { name: dict[currentLang].unknown, version: dict[currentLang].unknown, device: "Linux端末" };
-        }
-        return { name: dict[currentLang].unknown, version: dict[currentLang].unknown, device: dict[currentLang].unknown };
+
+        // 空白や不明値の補正
+        if (!name) name = dict[currentLang].unknown;
+        if (!version) version = dict[currentLang].unknown;
+        if (!device) device = dict[currentLang].unknown;
+        return { name, version, device };
       }
 
       function getBrowser() {
@@ -408,7 +434,7 @@
         Object.values(tables).forEach(tbl => tbl.innerHTML = '');
 
         const ua = navigator.userAgent;
-        const osInfo = detectOS();
+        const osInfo = await detectOS();  // awaitに修正
         const browser = getBrowser();
         const { ipv4, ipv6, currentIP } = await fetchIPData();
         const cpuCores = navigator.hardwareConcurrency || lang.unknown;
