@@ -1,4 +1,20 @@
 (function () {
+  // ===== サイトごとの設定と年数自動更新 =====
+  const siteConfig = {
+    "hamuzon.github.io": { baseYear: 2025, copyrightHolder: "@hamuzon" },
+    "hamusata.f5.si": { baseYear: 2025, copyrightHolder: "@hamusata" },
+    "default": { baseYear: 2025, copyrightHolder: "device-info" }
+  };
+  const host = window.location.hostname;
+  const config = siteConfig[host] || siteConfig["default"];
+  const currentYear = new Date().getFullYear();
+  const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+
+  // 年数表示
+  const yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = yearText;
+
+  // ===== 言語辞書 =====
   const dict = {
     ja: {
       title: "デバイス情報",
@@ -6,23 +22,15 @@
       os_ua: "OS情報（User-Agent）",
       browser_ch: "ブラウザ情報（UA-CH）",
       browser_ua: "ブラウザ情報（User-Agent）",
-      category: {
-        os: "OS情報",
-        browser: "ブラウザ情報",
-        screen: "画面情報",
-        cpu: "CPU・メモリ",
-        network: "ネットワーク情報",
-        other: "その他情報"
-      },
+      category: { os: "OS情報", browser: "ブラウザ情報", screen: "画面情報", cpu: "CPU・メモリ", network: "ネットワーク情報", other: "その他情報" },
       os: "OS名", version: "バージョン", device: "端末名", browser: "ブラウザ", browserVersion: "バージョン", ua: "ユーザーエージェント",
       screen: "画面解像度", viewport: "ビューポート", colorDepth: "色深度", pixelDepth: "ピクセル深度",
       cpu: "CPUコア数", cpuName: "CPU名", memory: "メモリ(概算)", ipv4: "IPv4アドレス", ipv6: "IPv6アドレス", ip: "現在使用IP",
       online: "オンライン状態", language: "ブラウザ言語", cookiesEnabled: "クッキー有効", fetchedAt: "取得時刻", now: "現在時刻", timezone: "タイムゾーン",
       unknown: "不明", not_available: "取得不可", online_yes: "オンライン", online_no: "オフライン",
-      light: "ライト",
-      dark: "ダーク",
+      light: "ライト", dark: "ダーク",
       footer: {
-        copyright: "© 2025 device-info",
+        copyright: `© ${yearText} ${config.copyrightHolder}`,
         warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
@@ -37,23 +45,15 @@
       os_ua: "OS Information (User-Agent)",
       browser_ch: "Browser Information (UA-CH)",
       browser_ua: "Browser Information (User-Agent)",
-      category: {
-        os: "OS Information",
-        browser: "Browser Information",
-        screen: "Screen Information",
-        cpu: "CPU & Memory",
-        network: "Network Information",
-        other: "Other Information"
-      },
+      category: { os: "OS Information", browser: "Browser Information", screen: "Screen Information", cpu: "CPU & Memory", network: "Network Information", other: "Other Information" },
       os: "Operating System", version: "Version", device: "Device Name", browser: "Browser", browserVersion: "Version", ua: "User Agent",
       screen: "Screen Resolution", viewport: "Viewport", colorDepth: "Color Depth", pixelDepth: "Pixel Depth",
       cpu: "CPU Cores", cpuName: "CPU Name", memory: "Memory (approx.)", ipv4: "IPv4 Address", ipv6: "IPv6 Address", ip: "Current IP",
       online: "Online Status", language: "Browser Language", cookiesEnabled: "Cookies Enabled", fetchedAt: "Fetched At", now: "Current Time", timezone: "Timezone",
       unknown: "Unknown", not_available: "Not available", online_yes: "Online", online_no: "Offline",
-      light: "Light",
-      dark: "Dark",
+      light: "Light", dark: "Dark",
       footer: {
-        copyright: "© 2025 device-info",
+        copyright: `© ${yearText} ${config.copyrightHolder}`,
         warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
@@ -64,17 +64,17 @@
     }
   };
 
-  // 言語自動判定
+  // ===== 初期言語・モード判定 =====
   let currentLang = localStorage.getItem("lang");
   if (!currentLang) {
     currentLang = navigator.language && navigator.language.startsWith("ja") ? "ja" : "en";
     localStorage.setItem("lang", currentLang);
   }
-  // ダーク/ライトモード自動
+
   let darkMode = localStorage.getItem("mode") === "dark" ||
     (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  // 要素取得
+  // ===== DOM要素取得 =====
   const titleEl = document.getElementById('title');
   const btnJa = document.getElementById('btn-ja');
   const btnEn = document.getElementById('btn-en');
@@ -107,13 +107,12 @@
     other: document.getElementById('cat-other')
   };
 
+  // ===== UA-CH取得 =====
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
       try {
-        const ch = await navigator.userAgentData.getHighEntropyValues([
-          "platform", "platformVersion", "model", "uaFullVersion"
-        ]);
+        const ch = await navigator.userAgentData.getHighEntropyValues(["platform", "platformVersion", "model", "uaFullVersion"]);
         result.os = ch.platform || "";
         result.version = ch.platformVersion || "";
         result.device = ch.model || "";
@@ -124,10 +123,12 @@
             result.browserVersion = b.version;
           }
         }
-      } catch(e) { }
+      } catch(e) {}
     }
     return result;
   }
+
+  // ===== UA解析 =====
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
     let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
@@ -153,14 +154,17 @@
       os = "Linux";
       device = currentLang === "ja" ? "Linux端末" : "Linux device";
     }
+
     let browser = dict[currentLang].unknown, bver = dict[currentLang].unknown;
-    if (/Edg\//.test(ua)) { browser = "Microsoft Edge"; bver = (ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;}
-    else if (/OPR\//.test(ua)) { browser = "Opera"; bver = (ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver;}
-    else if (/Chrome\//.test(ua)) { browser = "Chrome"; bver = (ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver;}
-    else if (/Firefox\//.test(ua)) { browser = "Firefox"; bver = (ua.match(/Firefox\/([\d\.]+)/)||[])[1]||bver;}
-    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) { browser = "Safari"; bver = (ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;}
+    if (/Edg\//.test(ua)) { browser = "Microsoft Edge"; bver = (ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver; }
+    else if (/OPR\//.test(ua)) { browser = "Opera"; bver = (ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver; }
+    else if (/Chrome\//.test(ua)) { browser = "Chrome"; bver = (ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver; }
+    else if (/Firefox\//.test(ua)) { browser = "Firefox"; bver = (ua.match(/Firefox\/([\d\.]+)/)||[])[1]||bver; }
+    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) { browser = "Safari"; bver = (ua.match(/Version\/([\d\.]+)/)||[])[1]||bver; }
     return { os, version, device, browser, browserVersion: bver };
   }
+
+  // ===== CPU名取得 =====
   function getCpuNameByUA() {
     const ua = navigator.userAgent;
     if (/arm|aarch64/i.test(ua)) return currentLang === "ja" ? "ARM (推定)" : "ARM (Estimated)";
@@ -170,95 +174,72 @@
     if (/mips/i.test(ua)) return currentLang === "ja" ? "MIPS (推定)" : "MIPS (Estimated)";
     return dict[currentLang].not_available;
   }
+
+  // ===== 表作成 =====
   function createRow(label, value) {
     const row = document.createElement('tr');
     row.innerHTML = `<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
     return row;
   }
+
+  // ===== IP取得 =====
   async function fetchIPData() {
-    const ipv4 = await fetch('https://api.ipify.org?format=json')
-      .then(res => res.json()).then(data => data.ip || dict[currentLang].unknown)
-      .catch(() => dict[currentLang].unknown);
-    const ipv6 = await fetch('https://api64.ipify.org?format=json')
-      .then(res => res.json()).then(data => data.ip || dict[currentLang].unknown)
-      .catch(() => dict[currentLang].unknown);
+    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => data.ip || dict[currentLang].unknown).catch(() => dict[currentLang].unknown);
+    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res => res.json()).then(data => data.ip || dict[currentLang].unknown).catch(() => dict[currentLang].unknown);
     const currentIP = ipv6 && ipv6 !== dict[currentLang].unknown ? ipv6 : ipv4;
     return { ipv4, ipv6, currentIP };
   }
+
+  // ===== 情報更新 =====
   async function updateInfo() {
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl => tbl.innerHTML = '');
+
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
+
     osUaChLabel.textContent = lang.os_ch;
-    [
-      [lang.os, osch.os || lang.unknown],
-      [lang.version, osch.version || lang.unknown],
-      [lang.device, osch.device || lang.unknown]
-    ].forEach(([l,v]) => tables.os_ua_ch.appendChild(createRow(l,v)));
+    [[lang.os, osch.os || lang.unknown], [lang.version, osch.version || lang.unknown], [lang.device, osch.device || lang.unknown]].forEach(([l,v]) => tables.os_ua_ch.appendChild(createRow(l,v)));
+
     osUaLabel.textContent = lang.os_ua;
-    [
-      [lang.os, osua.os],
-      [lang.version, osua.version],
-      [lang.device, osua.device]
-    ].forEach(([l,v]) => tables.os_ua.appendChild(createRow(l,v)));
+    [[lang.os, osua.os], [lang.version, osua.version], [lang.device, osua.device]].forEach(([l,v]) => tables.os_ua.appendChild(createRow(l,v)));
+
     browserUaChLabel.textContent = lang.browser_ch;
-    [
-      [lang.browser, osch.browser || lang.unknown],
-      [lang.browserVersion, osch.browserVersion || lang.unknown]
-    ].forEach(([l,v]) => tables.browser_ua_ch.appendChild(createRow(l,v)));
+    [[lang.browser, osch.browser || lang.unknown], [lang.browserVersion, osch.browserVersion || lang.unknown]].forEach(([l,v]) => tables.browser_ua_ch.appendChild(createRow(l,v)));
+
     browserUaLabel.textContent = lang.browser_ua;
-    [
-      [lang.browser, osua.browser],
-      [lang.browserVersion, osua.browserVersion]
-    ].forEach(([l,v]) => tables.browser_ua.appendChild(createRow(l,v)));
-    // 画面
+    [[lang.browser, osua.browser], [lang.browserVersion, osua.browserVersion]].forEach(([l,v]) => tables.browser_ua.appendChild(createRow(l,v)));
+
+    // 画面情報
     const screenRes = `${screen.width} x ${screen.height}`;
     const viewport = `${window.innerWidth} x ${window.innerHeight}`;
     const colorDepth = screen.colorDepth;
     const pixelDepth = screen.pixelDepth;
-    [
-      [lang.screen, screenRes],
-      [lang.viewport, viewport],
-      [lang.colorDepth, colorDepth],
-      [lang.pixelDepth, pixelDepth]
-    ].forEach(([l,v]) => tables.screen.appendChild(createRow(l,v)));
+    [[lang.screen, screenRes], [lang.viewport, viewport], [lang.colorDepth, colorDepth], [lang.pixelDepth, pixelDepth]].forEach(([l,v]) => tables.screen.appendChild(createRow(l,v)));
+
     // CPU・メモリ
     const cpuCores = typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : lang.unknown;
-    let memory = lang.unknown;
-    if (typeof navigator.deviceMemory === "number") {
-      memory = `${navigator.deviceMemory} GB`;
-    }
-    [
-      [lang.cpu, cpuCores],
-      [lang.cpuName, getCpuNameByUA()],
-      [lang.memory, memory]
-    ].forEach(([l,v]) => tables.cpu.appendChild(createRow(l,v)));
+    let memory = typeof navigator.deviceMemory === "number" ? `${navigator.deviceMemory} GB` : lang.unknown;
+    [[lang.cpu, cpuCores], [lang.cpuName, getCpuNameByUA()], [lang.memory, memory]].forEach(([l,v]) => tables.cpu.appendChild(createRow(l,v)));
+
     // ネットワーク
     const { ipv4, ipv6, currentIP } = await fetchIPData();
     const onlineStatus = navigator.onLine ? lang.online_yes : lang.online_no;
-    [
-      [lang.ipv4, ipv4],
-      [lang.ipv6, ipv6],
-      [lang.ip, currentIP],
-      [lang.online, onlineStatus]
-    ].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
+    [[lang.ipv4, ipv4], [lang.ipv6, ipv6], [lang.ip, currentIP], [lang.online, onlineStatus]].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
+
     // その他
     const language = navigator.language || lang.unknown;
     const cookiesEnabled = navigator.cookieEnabled ? lang.online_yes : lang.online_no;
     const fetchedAt = new Date();
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || lang.unknown;
-    [
-      [lang.language, language],
-      [lang.cookiesEnabled, cookiesEnabled],
-      [lang.fetchedAt, fetchedAt.toLocaleString()],
-      [lang.now, ''],
-      [lang.timezone, timezone]
-    ].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
-    // フッター
-    footerCopyright.textContent = lang.footer.copyright;
-    footerWarning.textContent = lang.footer.warning;
-    footerLibrary.innerHTML = lang.footer.library;
+    [[lang.language, language], [lang.cookiesEnabled, cookiesEnabled], [lang.fetchedAt, fetchedAt.toLocaleString()], [lang.now, ''], [lang.timezone, timezone]].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
+
+    // フッター更新
+    if (footerCopyright) footerCopyright.textContent = `© ${yearText} ${config.copyrightHolder}`;
+    if (footerWarning) footerWarning.textContent = lang.footer.warning;
+    if (footerLibrary) footerLibrary.innerHTML = lang.footer.library;
   }
+
+  // 現在時刻更新
   function updateCurrentTime() {
     const nowStr = new Date().toLocaleString();
     const rows = tables.other.querySelectorAll('tr');
@@ -269,13 +250,13 @@
       }
     }
   }
+
+  // 言語切替
   function setLang(lang) {
     currentLang = lang;
     localStorage.setItem("lang", lang);
     titleEl.textContent = dict[lang].title;
-    Object.entries(dict[lang].category).forEach(([key, label]) => {
-      if (sectionTitles[key]) sectionTitles[key].textContent = label;
-    });
+    Object.entries(dict[lang].category).forEach(([key, label]) => { if (sectionTitles[key]) sectionTitles[key].textContent = label; });
     btnJa.classList.toggle('active', lang === 'ja');
     btnEn.classList.toggle('active', lang === 'en');
     btnJa.setAttribute('aria-pressed', lang === 'ja');
@@ -285,6 +266,8 @@
     document.body.setAttribute("lang", lang);
     updateInfo();
   }
+
+  // モード切替
   function setMode(isDark) {
     darkMode = isDark;
     localStorage.setItem("mode", isDark ? "dark" : "light");
@@ -295,15 +278,8 @@
     btnDark.setAttribute('aria-pressed', darkMode);
     favicon.href = isDark ? 'icon-dark.png' : 'icon-light.png';
   }
-  btnJa.addEventListener('click', () => setLang('ja'));
-  btnEn.addEventListener('click', () => setLang('en'));
-  btnLight.addEventListener('click', () => setMode(false));
-  btnDark.addEventListener('click', () => setMode(true));
-  setMode(darkMode);
-  setLang(currentLang);
-  setInterval(updateCurrentTime, 1000);
 
-  // 言語ごとに単一言語だけ表示にする（混在部も切替）
+  // 言語単一表示
   function toggleLanguageOnlyDisplay(lang) {
     for (const key in sectionTitles) {
       const h2 = sectionTitles[key];
@@ -313,30 +289,17 @@
     btnLight.textContent = dict[lang].light;
     btnDark.textContent = dict[lang].dark;
   }
-  btnJa.addEventListener('click', () => toggleLanguageOnlyDisplay('ja'));
-  btnEn.addEventListener('click', () => toggleLanguageOnlyDisplay('en'));
+
+  // ===== イベント登録 =====
+  btnJa.addEventListener('click', () => { setLang('ja'); toggleLanguageOnlyDisplay('ja'); });
+  btnEn.addEventListener('click', () => { setLang('en'); toggleLanguageOnlyDisplay('en'); });
+  btnLight.addEventListener('click', () => setMode(false));
+  btnDark.addEventListener('click', () => setMode(true));
+
+  // ===== 初期セット =====
+  setMode(darkMode);
+  setLang(currentLang);
   toggleLanguageOnlyDisplay(currentLang);
+  setInterval(updateCurrentTime, 1000);
 
-  // --- 年数自動更新 ---
-  (function() {
-    const siteConfig = {
-      "hamuzon.github.io": { baseYear: 2025, copyrightHolder: "@hamuzon" },
-      "hamusata.f5.si": { baseYear: 2025, copyrightHolder: "@hamusata" },
-      "default": { baseYear: 2025, copyrightHolder: "device-info" }
-    };
-    const host = window.location.hostname;
-    const config = siteConfig[host] || siteConfig["default"];
-    const currentYear = new Date().getFullYear();
-    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
-
-    // 年数表示
-    const yearEl = document.getElementById("year");
-    if (yearEl) yearEl.textContent = yearText;
-
-    // フッター著作権更新
-    const footerCopyright = document.getElementById("footer-copyright");
-    if (footerCopyright) {
-      footerCopyright.textContent = `© ${yearText} ${config.copyrightHolder}`;
-    }
-  })();
 })();
