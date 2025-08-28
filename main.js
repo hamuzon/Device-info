@@ -316,4 +316,27 @@
   btnJa.addEventListener('click', () => toggleLanguageOnlyDisplay('ja'));
   btnEn.addEventListener('click', () => toggleLanguageOnlyDisplay('en'));
   toggleLanguageOnlyDisplay(currentLang);
+
+  // --- 年数自動更新 ---
+  (function() {
+    const siteConfig = {
+      "hamuzon.github.io": { baseYear: 2025, copyrightHolder: "@hamuzon" },
+      "hamusata.f5.si": { baseYear: 2025, copyrightHolder: "@hamusata" },
+      "default": { baseYear: 2025, copyrightHolder: "device-info" }
+    };
+    const host = window.location.hostname;
+    const config = siteConfig[host] || siteConfig["default"];
+    const currentYear = new Date().getFullYear();
+    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+
+    // 年数表示
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = yearText;
+
+    // フッター著作権更新
+    const footerCopyright = document.getElementById("footer-copyright");
+    if (footerCopyright) {
+      footerCopyright.textContent = `© ${yearText} ${config.copyrightHolder}`;
+    }
+  })();
 })();
