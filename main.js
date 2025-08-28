@@ -70,7 +70,6 @@
     currentLang = navigator.language && navigator.language.startsWith("ja") ? "ja" : "en";
     localStorage.setItem("lang", currentLang);
   }
-
   // ダーク/ライトモード自動
   let darkMode = localStorage.getItem("mode") === "dark" ||
     (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -108,22 +107,6 @@
     other: document.getElementById('cat-other')
   };
 
-  const memoryBarContainer = document.getElementById('memory-bar-container'); // メモリバー用
-  const yearEl = document.getElementById('year'); // 年数表示用
-  const siteLabelEl = document.getElementById('site-label'); // サイト情報用
-
-  // 年数表示
-  const baseYear = 2025;
-  const currentYear = new Date().getFullYear();
-  yearEl.textContent = currentYear > baseYear ? `${baseYear}~${currentYear}` : `${baseYear}`;
-
-  // サイト情報表示
-  siteLabelEl.innerHTML = `
-    <span>@hamuzon device-info</span> |
-    <span>@hamusata device-info</span>
-  `;
-
-  // UA-CH & UA取得
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
@@ -136,13 +119,15 @@
         result.device = ch.model || "";
         if (navigator.userAgentData.brands && navigator.userAgentData.brands.length) {
           const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
-          if (b) { result.browser = b.brand; result.browserVersion = b.version; }
+          if (b) {
+            result.browser = b.brand;
+            result.browserVersion = b.version;
+          }
         }
       } catch(e) { }
     }
     return result;
   }
-
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
     let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
@@ -157,11 +142,16 @@
     } else if (/Windows NT/.test(ua)) {
       const ver = (ua.match(/Windows NT ([\d.]+)/)||[])[1];
       const map = { "10.0": "10 / 11", "6.3": "8.1", "6.2": "8", "6.1": "7", "6.0": "Vista", "5.1": "XP" };
-      os = "Windows"; version = map[ver]||ver||version; device = "PC";
+      os = "Windows";
+      version = map[ver]||ver||version;
+      device = "PC";
     } else if (/Mac OS X/.test(ua)) {
-      os = "macOS"; version = (ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device = "Mac";
+      os = "macOS";
+      version = (ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version;
+      device = "Mac";
     } else if (/Linux/.test(navigator.platform)) {
-      os = "Linux"; device = currentLang === "ja" ? "Linux端末" : "Linux device";
+      os = "Linux";
+      device = currentLang === "ja" ? "Linux端末" : "Linux device";
     }
     let browser = dict[currentLang].unknown, bver = dict[currentLang].unknown;
     if (/Edg\//.test(ua)) { browser = "Microsoft Edge"; bver = (ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;}
@@ -171,7 +161,6 @@
     else if (/Safari/.test(ua) && !/Chrome/.test(ua)) { browser = "Safari"; bver = (ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;}
     return { os, version, device, browser, browserVersion: bver };
   }
-
   function getCpuNameByUA() {
     const ua = navigator.userAgent;
     if (/arm|aarch64/i.test(ua)) return currentLang === "ja" ? "ARM (推定)" : "ARM (Estimated)";
@@ -181,123 +170,150 @@
     if (/mips/i.test(ua)) return currentLang === "ja" ? "MIPS (推定)" : "MIPS (Estimated)";
     return dict[currentLang].not_available;
   }
-
   function createRow(label, value) {
     const row = document.createElement('tr');
     row.innerHTML = `<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
     return row;
   }
-
   async function fetchIPData() {
-    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(data=>data.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(data=>data.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const ipv4 = await fetch('https://api.ipify.org?format=json')
+      .then(res => res.json()).then(data => data.ip || dict[currentLang].unknown)
+      .catch(() => dict[currentLang].unknown);
+    const ipv6 = await fetch('https://api64.ipify.org?format=json')
+      .then(res => res.json()).then(data => data.ip || dict[currentLang].unknown)
+      .catch(() => dict[currentLang].unknown);
     const currentIP = ipv6 && ipv6 !== dict[currentLang].unknown ? ipv6 : ipv4;
     return { ipv4, ipv6, currentIP };
   }
-
   async function updateInfo() {
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl => tbl.innerHTML = '');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
-
     osUaChLabel.textContent = lang.os_ch;
-    [[lang.os, osch.os || lang.unknown],[lang.version, osch.version || lang.unknown],[lang.device, osch.device || lang.unknown]]
-      .forEach(([l,v]) => tables.os_ua_ch.appendChild(createRow(l,v)));
+    [
+      [lang.os, osch.os || lang.unknown],
+      [lang.version, osch.version || lang.unknown],
+      [lang.device, osch.device || lang.unknown]
+    ].forEach(([l,v]) => tables.os_ua_ch.appendChild(createRow(l,v)));
     osUaLabel.textContent = lang.os_ua;
-    [[lang.os, osua.os],[lang.version, osua.version],[lang.device, osua.device]]
-      .forEach(([l,v]) => tables.os_ua.appendChild(createRow(l,v)));
-
+    [
+      [lang.os, osua.os],
+      [lang.version, osua.version],
+      [lang.device, osua.device]
+    ].forEach(([l,v]) => tables.os_ua.appendChild(createRow(l,v)));
     browserUaChLabel.textContent = lang.browser_ch;
-    [[lang.browser, osch.browser || lang.unknown],[lang.browserVersion, osch.browserVersion || lang.unknown]]
-      .forEach(([l,v]) => tables.browser_ua_ch.appendChild(createRow(l,v)));
+    [
+      [lang.browser, osch.browser || lang.unknown],
+      [lang.browserVersion, osch.browserVersion || lang.unknown]
+    ].forEach(([l,v]) => tables.browser_ua_ch.appendChild(createRow(l,v)));
     browserUaLabel.textContent = lang.browser_ua;
-    [[lang.browser, osua.browser],[lang.browserVersion, osua.browserVersion]]
-      .forEach(([l,v]) => tables.browser_ua.appendChild(createRow(l,v)));
-
+    [
+      [lang.browser, osua.browser],
+      [lang.browserVersion, osua.browserVersion]
+    ].forEach(([l,v]) => tables.browser_ua.appendChild(createRow(l,v)));
     // 画面
-    [[lang.screen, `${screen.width} x ${screen.height}`],
-     [lang.viewport, `${window.innerWidth} x ${window.innerHeight}`],
-     [lang.colorDepth, screen.colorDepth],
-     [lang.pixelDepth, screen.pixelDepth]]
-     .forEach(([l,v]) => tables.screen.appendChild(createRow(l,v)));
-
+    const screenRes = `${screen.width} x ${screen.height}`;
+    const viewport = `${window.innerWidth} x ${window.innerHeight}`;
+    const colorDepth = screen.colorDepth;
+    const pixelDepth = screen.pixelDepth;
+    [
+      [lang.screen, screenRes],
+      [lang.viewport, viewport],
+      [lang.colorDepth, colorDepth],
+      [lang.pixelDepth, pixelDepth]
+    ].forEach(([l,v]) => tables.screen.appendChild(createRow(l,v)));
     // CPU・メモリ
-    const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
+    const cpuCores = typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : lang.unknown;
     let memory = lang.unknown;
-    if(typeof navigator.deviceMemory==="number"){ memory = `${navigator.deviceMemory} GB`; }
-
-    [[lang.cpu, cpuCores],[lang.cpuName, getCpuNameByUA()],[lang.memory, memory]]
-      .forEach(([l,v]) => tables.cpu.appendChild(createRow(l,v)));
-
-    // メモリバー表示
-    if(memoryBarContainer){
-      const memValue = Math.min(navigator.deviceMemory||0,8);
-      memoryBarContainer.innerHTML = `<div style="background:#4da6ff;height:16px;width:${(memValue/8)*100}%;border-radius:4px;"></div>
-        <span>${memValue} GB / 最大 8 GB</span>`;
+    if (typeof navigator.deviceMemory === "number") {
+      memory = `${navigator.deviceMemory} GB`;
     }
-
+    [
+      [lang.cpu, cpuCores],
+      [lang.cpuName, getCpuNameByUA()],
+      [lang.memory, memory]
+    ].forEach(([l,v]) => tables.cpu.appendChild(createRow(l,v)));
     // ネットワーク
     const { ipv4, ipv6, currentIP } = await fetchIPData();
-    const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
-    [[lang.ipv4, ipv4],[lang.ipv6, ipv6],[lang.ip, currentIP],[lang.online, onlineStatus]]
-      .forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
-
+    const onlineStatus = navigator.onLine ? lang.online_yes : lang.online_no;
+    [
+      [lang.ipv4, ipv4],
+      [lang.ipv6, ipv6],
+      [lang.ip, currentIP],
+      [lang.online, onlineStatus]
+    ].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
     // その他
     const language = navigator.language || lang.unknown;
-    const cookiesEnabled = navigator.cookieEnabled?lang.online_yes:lang.online_no;
+    const cookiesEnabled = navigator.cookieEnabled ? lang.online_yes : lang.online_no;
     const fetchedAt = new Date();
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || lang.unknown;
-    [[lang.language, language],[lang.cookiesEnabled, cookiesEnabled],[lang.fetchedAt, fetchedAt.toLocaleString()],[lang.now, ''],[lang.timezone, timezone]]
-      .forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
-
+    [
+      [lang.language, language],
+      [lang.cookiesEnabled, cookiesEnabled],
+      [lang.fetchedAt, fetchedAt.toLocaleString()],
+      [lang.now, ''],
+      [lang.timezone, timezone]
+    ].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
     // フッター
     footerCopyright.textContent = lang.footer.copyright;
     footerWarning.textContent = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
-
-  function updateCurrentTime(){
+  function updateCurrentTime() {
     const nowStr = new Date().toLocaleString();
     const rows = tables.other.querySelectorAll('tr');
-    for(const row of rows){
-      if(row.firstElementChild?.textContent===dict[currentLang].now){
-        row.lastElementChild.textContent = nowStr; break;
+    for (const row of rows) {
+      if (row.firstElementChild?.textContent === dict[currentLang].now) {
+        row.lastElementChild.textContent = nowStr;
+        break;
       }
     }
   }
-
-  function setLang(lang){
-    currentLang = lang; localStorage.setItem("lang",lang);
+  function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem("lang", lang);
     titleEl.textContent = dict[lang].title;
-    Object.entries(dict[lang].category).forEach(([key,label])=>{
-      if(sectionTitles[key]) sectionTitles[key].textContent = label;
+    Object.entries(dict[lang].category).forEach(([key, label]) => {
+      if (sectionTitles[key]) sectionTitles[key].textContent = label;
     });
-    btnJa.classList.toggle('active', lang==='ja');
-    btnEn.classList.toggle('active', lang==='en');
-    btnJa.setAttribute('aria-pressed', lang==='ja');
-    btnEn.setAttribute('aria-pressed', lang==='en');
-    btnLight.textContent = dict[lang].light+" / Light";
-    btnDark.textContent = dict[lang].dark+" / Dark";
-    document.body.setAttribute("lang",lang);
+    btnJa.classList.toggle('active', lang === 'ja');
+    btnEn.classList.toggle('active', lang === 'en');
+    btnJa.setAttribute('aria-pressed', lang === 'ja');
+    btnEn.setAttribute('aria-pressed', lang === 'en');
+    btnLight.textContent = dict[lang].light + " / Light";
+    btnDark.textContent = dict[lang].dark + " / Dark";
+    document.body.setAttribute("lang", lang);
     updateInfo();
   }
-
-  function setMode(isDark){
-    darkMode = isDark; localStorage.setItem("mode", isDark?"dark":"light");
-    document.body.classList.toggle('light',!darkMode);
-    btnLight.classList.toggle('active',!darkMode);
-    btnDark.classList.toggle('active',darkMode);
-    btnLight.setAttribute('aria-pressed',!darkMode);
-    btnDark.setAttribute('aria-pressed',darkMode);
-    favicon.href = isDark?'icon-dark.png':'icon-light.png';
+  function setMode(isDark) {
+    darkMode = isDark;
+    localStorage.setItem("mode", isDark ? "dark" : "light");
+    document.body.classList.toggle('light', !darkMode);
+    btnLight.classList.toggle('active', !darkMode);
+    btnDark.classList.toggle('active', darkMode);
+    btnLight.setAttribute('aria-pressed', !darkMode);
+    btnDark.setAttribute('aria-pressed', darkMode);
+    favicon.href = isDark ? 'icon-dark.png' : 'icon-light.png';
   }
-
-  btnJa.addEventListener('click',()=>setLang('ja'));
-  btnEn.addEventListener('click',()=>setLang('en'));
-  btnLight.addEventListener('click',()=>setMode(false));
-  btnDark.addEventListener('click',()=>setMode(true));
-
+  btnJa.addEventListener('click', () => setLang('ja'));
+  btnEn.addEventListener('click', () => setLang('en'));
+  btnLight.addEventListener('click', () => setMode(false));
+  btnDark.addEventListener('click', () => setMode(true));
   setMode(darkMode);
   setLang(currentLang);
-  setInterval(updateCurrentTime,1000);
+  setInterval(updateCurrentTime, 1000);
+
+  // 言語ごとに単一言語だけ表示にする（混在部も切替）
+  function toggleLanguageOnlyDisplay(lang) {
+    for (const key in sectionTitles) {
+      const h2 = sectionTitles[key];
+      if (!h2) continue;
+      h2.textContent = dict[lang].category[key];
+    }
+    btnLight.textContent = dict[lang].light;
+    btnDark.textContent = dict[lang].dark;
+  }
+  btnJa.addEventListener('click', () => toggleLanguageOnlyDisplay('ja'));
+  btnEn.addEventListener('click', () => toggleLanguageOnlyDisplay('en'));
+  toggleLanguageOnlyDisplay(currentLang);
 })();
