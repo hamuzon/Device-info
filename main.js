@@ -22,7 +22,7 @@
       light: "ライト",
       dark: "ダーク",
       footer: {
-        copyright: "© 2025 device-info",
+        copyright: "© ",
         warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
@@ -53,7 +53,7 @@
       light: "Light",
       dark: "Dark",
       footer: {
-        copyright: "© 2025 device-info",
+        copyright: "© ",
         warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
@@ -70,6 +70,7 @@
     currentLang = navigator.language && navigator.language.startsWith("ja") ? "ja" : "en";
     localStorage.setItem("lang", currentLang);
   }
+
   // ダーク/ライトモード自動
   let darkMode = localStorage.getItem("mode") === "dark" ||
     (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -128,6 +129,7 @@
     }
     return result;
   }
+
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
     let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
@@ -161,6 +163,7 @@
     else if (/Safari/.test(ua) && !/Chrome/.test(ua)) { browser = "Safari"; bver = (ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;}
     return { os, version, device, browser, browserVersion: bver };
   }
+
   function getCpuNameByUA() {
     const ua = navigator.userAgent;
     if (/arm|aarch64/i.test(ua)) return currentLang === "ja" ? "ARM (推定)" : "ARM (Estimated)";
@@ -170,11 +173,13 @@
     if (/mips/i.test(ua)) return currentLang === "ja" ? "MIPS (推定)" : "MIPS (Estimated)";
     return dict[currentLang].not_available;
   }
+
   function createRow(label, value) {
     const row = document.createElement('tr');
     row.innerHTML = `<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
     return row;
   }
+
   async function fetchIPData() {
     const ipv4 = await fetch('https://api.ipify.org?format=json')
       .then(res => res.json()).then(data => data.ip || dict[currentLang].unknown)
@@ -185,32 +190,38 @@
     const currentIP = ipv6 && ipv6 !== dict[currentLang].unknown ? ipv6 : ipv4;
     return { ipv4, ipv6, currentIP };
   }
+
   async function updateInfo() {
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl => tbl.innerHTML = '');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
+
     osUaChLabel.textContent = lang.os_ch;
     [
       [lang.os, osch.os || lang.unknown],
       [lang.version, osch.version || lang.unknown],
       [lang.device, osch.device || lang.unknown]
     ].forEach(([l,v]) => tables.os_ua_ch.appendChild(createRow(l,v)));
+
     osUaLabel.textContent = lang.os_ua;
     [
       [lang.os, osua.os],
       [lang.version, osua.version],
       [lang.device, osua.device]
     ].forEach(([l,v]) => tables.os_ua.appendChild(createRow(l,v)));
+
     browserUaChLabel.textContent = lang.browser_ch;
     [
       [lang.browser, osch.browser || lang.unknown],
       [lang.browserVersion, osch.browserVersion || lang.unknown]
     ].forEach(([l,v]) => tables.browser_ua_ch.appendChild(createRow(l,v)));
+
     browserUaLabel.textContent = lang.browser_ua;
     [
       [lang.browser, osua.browser],
       [lang.browserVersion, osua.browserVersion]
     ].forEach(([l,v]) => tables.browser_ua.appendChild(createRow(l,v)));
+
     // 画面
     const screenRes = `${screen.width} x ${screen.height}`;
     const viewport = `${window.innerWidth} x ${window.innerHeight}`;
@@ -222,17 +233,26 @@
       [lang.colorDepth, colorDepth],
       [lang.pixelDepth, pixelDepth]
     ].forEach(([l,v]) => tables.screen.appendChild(createRow(l,v)));
+
     // CPU・メモリ
     const cpuCores = typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : lang.unknown;
     let memory = lang.unknown;
-    if (typeof navigator.deviceMemory === "number") {
-      memory = `${navigator.deviceMemory} GB`;
-    }
+    if (typeof navigator.deviceMemory === "number") memory = `${navigator.deviceMemory} GB`;
+
     [
       [lang.cpu, cpuCores],
       [lang.cpuName, getCpuNameByUA()],
       [lang.memory, memory]
-    ].forEach(([l,v]) => tables.cpu.appendChild(createRow(l,v)));
+    ].forEach(([l,v]) => {
+      const row = createRow(l,v);
+      tables.cpu.appendChild(row);
+      if(l === lang.memory) {
+        const noteRow = document.createElement('tr');
+        noteRow.innerHTML = `<th></th><td>${currentLang==='ja'?'最大8GBまで':'Up to 8GB'}</td>`;
+        tables.cpu.appendChild(noteRow);
+      }
+    });
+
     // ネットワーク
     const { ipv4, ipv6, currentIP } = await fetchIPData();
     const onlineStatus = navigator.onLine ? lang.online_yes : lang.online_no;
@@ -242,6 +262,7 @@
       [lang.ip, currentIP],
       [lang.online, onlineStatus]
     ].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
+
     // その他
     const language = navigator.language || lang.unknown;
     const cookiesEnabled = navigator.cookieEnabled ? lang.online_yes : lang.online_no;
@@ -254,11 +275,16 @@
       [lang.now, ''],
       [lang.timezone, timezone]
     ].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
+
     // フッター
-    footerCopyright.textContent = lang.footer.copyright;
+    const baseYear = 2025;
+    const currentYear = new Date().getFullYear();
+    const yearStr = currentYear > baseYear ? `${baseYear}~${currentYear}` : `${baseYear}`;
+    footerCopyright.innerHTML = `${yearStr} @hamusata device-info`;
     footerWarning.textContent = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
+
   function updateCurrentTime() {
     const nowStr = new Date().toLocaleString();
     const rows = tables.other.querySelectorAll('tr');
@@ -269,6 +295,7 @@
       }
     }
   }
+
   function setLang(lang) {
     currentLang = lang;
     localStorage.setItem("lang", lang);
@@ -285,6 +312,7 @@
     document.body.setAttribute("lang", lang);
     updateInfo();
   }
+
   function setMode(isDark) {
     darkMode = isDark;
     localStorage.setItem("mode", isDark ? "dark" : "light");
@@ -295,25 +323,3 @@
     btnDark.setAttribute('aria-pressed', darkMode);
     favicon.href = isDark ? 'icon-dark.png' : 'icon-light.png';
   }
-  btnJa.addEventListener('click', () => setLang('ja'));
-  btnEn.addEventListener('click', () => setLang('en'));
-  btnLight.addEventListener('click', () => setMode(false));
-  btnDark.addEventListener('click', () => setMode(true));
-  setMode(darkMode);
-  setLang(currentLang);
-  setInterval(updateCurrentTime, 1000);
-
-  // 言語ごとに単一言語だけ表示にする（混在部も切替）
-  function toggleLanguageOnlyDisplay(lang) {
-    for (const key in sectionTitles) {
-      const h2 = sectionTitles[key];
-      if (!h2) continue;
-      h2.textContent = dict[lang].category[key];
-    }
-    btnLight.textContent = dict[lang].light;
-    btnDark.textContent = dict[lang].dark;
-  }
-  btnJa.addEventListener('click', () => toggleLanguageOnlyDisplay('ja'));
-  btnEn.addEventListener('click', () => toggleLanguageOnlyDisplay('en'));
-  toggleLanguageOnlyDisplay(currentLang);
-})();
