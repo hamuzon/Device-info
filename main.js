@@ -1,5 +1,4 @@
 (function () {
-  // ===== 言語辞書 =====
   const dict = {
     ja: {
       title: "デバイス情報",
@@ -7,19 +6,51 @@
       os_ua: "OS情報（User-Agent）",
       browser_ch: "ブラウザ情報（UA-CH）",
       browser_ua: "ブラウザ情報（User-Agent）",
-      category: { os: "OS情報", browser: "ブラウザ情報", screen: "画面情報", cpu: "CPU・メモリ", network: "ネットワーク情報", other: "その他情報" },
-      os: "OS名", version: "バージョン", device: "端末名", browser: "ブラウザ", browserVersion: "バージョン", ua: "ユーザーエージェント",
-      screen: "画面解像度", viewport: "ビューポート", colorDepth: "色深度", pixelDepth: "ピクセル深度",
-      cpu: "CPUコア数", cpuName: "CPU名", memory: "メモリ(概算)", ipv4: "IPv4アドレス", ipv6: "IPv6アドレス", ip: "現在使用IP",
-      online: "オンライン状態", language: "ブラウザ言語", cookiesEnabled: "クッキー有効", fetchedAt: "取得時刻", now: "現在時刻", timezone: "タイムゾーン",
-      unknown: "不明", not_available: "取得不可", online_yes: "オンライン", online_no: "オフライン",
-      light: "ライト", dark: "ダーク",
-      footer: { warning: "表示される情報は一部、正確でない可能性があります。",
+      category: {
+        os: "OS情報",
+        browser: "ブラウザ情報",
+        screen: "画面情報",
+        cpu: "CPU・メモリ",
+        network: "ネットワーク情報",
+        other: "その他情報"
+      },
+      os: "OS名",
+      version: "バージョン",
+      device: "端末名",
+      browser: "ブラウザ",
+      browserVersion: "バージョン",
+      ua: "ユーザーエージェント",
+      screen: "画面解像度",
+      viewport: "ビューポート",
+      colorDepth: "色深度",
+      pixelDepth: "ピクセル深度",
+      cpu: "CPUコア数",
+      cpuName: "CPU名",
+      memory: "メモリ(概算)",
+      ipv4: "IPv4アドレス",
+      ipv6: "IPv6アドレス",
+      ip: "現在使用IP",
+      online: "オンライン状態",
+      language: "ブラウザ言語",
+      cookiesEnabled: "クッキー有効",
+      fetchedAt: "取得時刻",
+      now: "現在時刻",
+      timezone: "タイムゾーン",
+      unknown: "不明",
+      not_available: "取得不可",
+      online_yes: "オンライン",
+      online_no: "オフライン",
+      light: "ライト",
+      dark: "ダーク",
+      footer: {
+        copyright: "© 2025 device-info",
+        warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
-          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>` }
+          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
+      }
     },
     en: {
       title: "Device Information",
@@ -27,23 +58,54 @@
       os_ua: "OS Information (User-Agent)",
       browser_ch: "Browser Information (UA-CH)",
       browser_ua: "Browser Information (User-Agent)",
-      category: { os: "OS Information", browser: "Browser Information", screen: "Screen Information", cpu: "CPU & Memory", network: "Network Information", other: "Other Information" },
-      os: "Operating System", version: "Version", device: "Device Name", browser: "Browser", browserVersion: "Version", ua: "User Agent",
-      screen: "Screen Resolution", viewport: "Viewport", colorDepth: "Color Depth", pixelDepth: "Pixel Depth",
-      cpu: "CPU Cores", cpuName: "CPU Name", memory: "Memory (approx.)", ipv4: "IPv4 Address", ipv6: "IPv6 Address", ip: "Current IP",
-      online: "Online Status", language: "Browser Language", cookiesEnabled: "Cookies Enabled", fetchedAt: "Fetched At", now: "Current Time", timezone: "Timezone",
-      unknown: "Unknown", not_available: "Not available", online_yes: "Online", online_no: "Offline",
-      light: "Light", dark: "Dark",
-      footer: { warning: "Displayed information may not be accurate.",
+      category: {
+        os: "OS Information",
+        browser: "Browser Information",
+        screen: "Screen Information",
+        cpu: "CPU & Memory",
+        network: "Network Information",
+        other: "Other Information"
+      },
+      os: "Operating System",
+      version: "Version",
+      device: "Device Name",
+      browser: "Browser",
+      browserVersion: "Version",
+      ua: "User Agent",
+      screen: "Screen Resolution",
+      viewport: "Viewport",
+      colorDepth: "Color Depth",
+      pixelDepth: "Pixel Depth",
+      cpu: "CPU Cores",
+      cpuName: "CPU Name",
+      memory: "Memory (approx.)",
+      ipv4: "IPv4 Address",
+      ipv6: "IPv6 Address",
+      ip: "Current IP",
+      online: "Online Status",
+      language: "Browser Language",
+      cookiesEnabled: "Cookies Enabled",
+      fetchedAt: "Fetched At",
+      now: "Current Time",
+      timezone: "Timezone",
+      unknown: "Unknown",
+      not_available: "Not available",
+      online_yes: "Online",
+      online_no: "Offline",
+      light: "Light",
+      dark: "Dark",
+      footer: {
+        copyright: "© 2025 device-info",
+        warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
-          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>` }
+          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
+      }
     }
   };
 
-  // ===== 要素取得 =====
   const titleEl = document.getElementById('title');
   const btnJa = document.getElementById('btn-ja');
   const btnEn = document.getElementById('btn-en');
@@ -76,17 +138,14 @@
     other: document.getElementById('cat-other')
   };
 
-  // ===== 言語・モード初期設定 =====
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
-  let darkMode = localStorage.getItem("mode") === "dark" ||
-    (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  // ===== 関数: OS/ブラウザ情報取得 =====
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
       try {
-        const ch = await navigator.userAgentData.getHighEntropyValues(["platform", "platformVersion", "model", "uaFullVersion"]);
+        const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
         result.os = ch.platform || "";
         result.version = ch.platformVersion || "";
         result.device = ch.model || "";
@@ -94,10 +153,11 @@
           const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
           if (b) { result.browser = b.brand; result.browserVersion = b.version; }
         }
-      } catch(e){ }
+      } catch(e){}
     }
     return result;
   }
+
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
     let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
@@ -114,6 +174,7 @@
     else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;
     return { os, version, device, browser, browserVersion:bver };
   }
+
   function getCpuNameByUA() {
     const ua = navigator.userAgent;
     if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?"ARM (推定)":"ARM (Estimated)";
@@ -123,68 +184,55 @@
     if (/mips/i.test(ua)) return currentLang==="ja"?"MIPS (推定)":"MIPS (Estimated)";
     return dict[currentLang].not_available;
   }
+
   function createRow(label,value){ const row=document.createElement('tr'); row.innerHTML=`<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`; return row; }
 
-  // ===== IP取得 =====
   async function fetchIPData() {
-    const ipv4=await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const ipv6=await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const currentIP=(ipv6 && ipv6!==dict[currentLang].unknown)?ipv6:ipv4;
+    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const currentIP = (ipv6 && ipv6!==dict[currentLang].unknown)?ipv6:ipv4;
     return { ipv4, ipv6, currentIP };
   }
 
-  // ===== 情報更新 =====
   async function updateInfo() {
-    const lang=dict[currentLang];
+    const lang = dict[currentLang];
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
-    const [osch, osua]=await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
+    const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
 
-    // OS/UA-CH
-    osUaChLabel.textContent=lang.os_ch;
+    osUaChLabel.textContent = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
 
-    // OS/UA
-    osUaLabel.textContent=lang.os_ua;
+    osUaLabel.textContent = lang.os_ua;
     [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
 
-    // Browser/UA-CH
-    browserUaChLabel.textContent=lang.browser_ch;
+    browserUaChLabel.textContent = lang.browser_ch;
     [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
 
-    // Browser/UA
-    browserUaLabel.textContent=lang.browser_ua;
+    browserUaLabel.textContent = lang.browser_ua;
     [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
 
-    // 画面情報
     [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
 
-    // CPU・メモリ
-    const cpuCores=typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
-    const memory=typeof navigator.deviceMemory==="number"?`${navigator.deviceMemory} GB`:lang.unknown;
+    const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
+    const memory = typeof navigator.deviceMemory==="number"?`${navigator.deviceMemory} GB`:lang.unknown;
     [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
-    // ネットワーク
-    const {ipv4,ipv6,currentIP}=await fetchIPData();
-    const onlineStatus=navigator.onLine?lang.online_yes:lang.online_no;
+    const {ipv4,ipv6,currentIP} = await fetchIPData();
+    const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
     [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
 
-    // その他
     [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
-    // フッターライブラリ・警告
-    footerWarning.textContent=lang.footer.warning;
-    footerLibrary.innerHTML=lang.footer.library;
+    footerWarning.textContent = lang.footer.warning;
+    footerLibrary.innerHTML = lang.footer.library;
   }
 
   function updateCurrentTime() {
-    const nowStr=new Date().toLocaleString();
-    const rows=tables.other.querySelectorAll('tr');
-    for(const row of rows){
-      if(row.firstElementChild?.textContent===dict[currentLang].now){ row.lastElementChild.textContent=nowStr; break; }
-    }
+    const nowStr = new Date().toLocaleString();
+    const rows = tables.other.querySelectorAll('tr');
+    for(const row of rows){ if(row.firstElementChild?.textContent===dict[currentLang].now){ row.lastElementChild.textContent=nowStr; break; } }
   }
 
-  // ===== 言語切替 =====
   function setLang(lang){
     currentLang=lang;
     localStorage.setItem("lang",lang);
@@ -200,7 +248,6 @@
     updateInfo();
   }
 
-  // ===== ダーク/ライトモード =====
   function setMode(isDark){
     darkMode=isDark;
     localStorage.setItem("mode",isDark?"dark":"light");
@@ -212,52 +259,38 @@
     favicon.href=isDark?'icon-dark.png':'icon-light.png';
   }
 
-  // ===== イベント =====
   btnJa.addEventListener('click',()=>{ setLang('ja'); toggleLanguageOnlyDisplay('ja'); });
   btnEn.addEventListener('click',()=>{ setLang('en'); toggleLanguageOnlyDisplay('en'); });
   btnLight.addEventListener('click',()=>setMode(false));
   btnDark.addEventListener('click',()=>setMode(true));
 
-  // ===== 言語単一表示切替 =====
   function toggleLanguageOnlyDisplay(lang){
-    for(const key in sectionTitles){
-      const h2=sectionTitles[key];
-      if(!h2) continue;
-      h2.textContent=dict[lang].category[key];
-    }
+    for(const key in sectionTitles){ const h2=sectionTitles[key]; if(h2) h2.textContent=dict[lang].category[key]; }
     btnLight.textContent=dict[lang].light;
     btnDark.textContent=dict[lang].dark;
   }
 
-  // ===== 初期化 =====
   setMode(darkMode);
   setLang(currentLang);
   toggleLanguageOnlyDisplay(currentLang);
   setInterval(updateCurrentTime,1000);
 
-// ===== サイトごとの年数・ユーザー名表示 =====
-(function() {
-  const siteConfig = {
-    "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
-    "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
-    "device-info.hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
-    "default": { baseYear: 2025, user: "device-info", link: "" }
-  };
-
-  const host = window.location.hostname;
-  const config = siteConfig[host] || siteConfig["default"];
-  const currentYear = new Date().getFullYear();
-  const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
-
-  const yearEl = document.getElementById("year");
-  if (yearEl) yearEl.textContent = yearText;
-
-  if (footerCopyright) {
-    if (config.link) {
-      // リンク付きユーザー名表示
-      footerCopyright.innerHTML = `${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`;
-    } else {
-      footerCopyright.textContent = `${yearText} device-info`;
+  (function() {
+    const siteConfig = {
+      "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
+      "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+      "device-info.hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+      "default": { baseYear: 2025, user: "device-info", link: "" }
+    };
+    const host = window.location.hostname;
+    const config = siteConfig[host] || siteConfig["default"];
+    const currentYear = new Date().getFullYear();
+    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+    const yearEl = document.getElementById("year");
+    if(yearEl) yearEl.textContent = yearText;
+    if(footerCopyright){
+      if(config.link){ footerCopyright.innerHTML = `${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`; }
+      else{ footerCopyright.textContent = `${yearText} device-info`; }
     }
-  }
+  })();
 })();
