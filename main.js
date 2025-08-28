@@ -276,21 +276,25 @@
   setInterval(updateCurrentTime,1000);
 
   (function() {
-    const siteConfig = {
-      "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
-      "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
-      "device-info.hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
-      "default": { baseYear: 2025, user: "device-info", link: "" }
-    };
-    const host = window.location.hostname;
-    const config = siteConfig[host] || siteConfig["default"];
-    const currentYear = new Date().getFullYear();
-    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
-    const yearEl = document.getElementById("year");
-    if(yearEl) yearEl.textContent = yearText;
-    if(footerCopyright){
-      if(config.link){ footerCopyright.innerHTML = `${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`; }
-      else{ footerCopyright.textContent = `${yearText} device-info`; }
+  const siteConfig = {
+    "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
+    "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+    "device-info.hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+    "default": { baseYear: 2025, user: "device-info", link: "" }
+  };
+
+  const host = window.location.hostname;
+  const config = siteConfig[host] || siteConfig["default"];
+  const currentYear = new Date().getFullYear();
+  const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+
+  const footerCopyright = document.getElementById("footer-copyright");
+  if (footerCopyright) {
+    if (config.link) {
+      footerCopyright.innerHTML = `© ${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`;
+    } else {
+      footerCopyright.textContent = `© ${yearText} device-info`;
     }
-  })();
+  }
+})();
 })();
