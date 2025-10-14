@@ -4,31 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Device-info</title>
-  <meta name="description" content="Deviceがページアクセス時に送る情報を使って表示します。※表示情報は実際の端末と異なる場合があります" />
-  
-  <!-- Favicon -->
-  <link id="favicon" rel="icon" type="image/png" href="icon-dark.png" />
-  
-  <!-- Theme Colors -->
-  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
-  
-  <!-- CSS -->
+
+  <!-- SEO / Open Graph / Twitter Card -->
+  <meta name="description" content="Device-info ページ。端末情報をブラウザから取得して表示します。">
+  <meta property="og:title" content="Device-info">
+  <meta property="og:description" content="Device-info ページ。端末情報をブラウザから取得して表示します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://device-info.hamusata.f5.si">
+  <meta property="og:image" content="https://hamusata.f5.si/icon_500_500.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Device-info">
+  <meta name="twitter:description" content="Device-info ページ。端末情報をブラウザから取得して表示します。">
+  <meta name="twitter:image" content="https://hamusata.f5.si/icon_500_500.webp">
+
+  <link id="favicon" rel="icon" type="image/png" href="https://device-info.hamusata.f5.si/icon-dark.png">
+  <link id="favicon-light" rel="icon" type="image/png" href="https://device-info.hamusata.f5.si/icon-light.png" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#001b33" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f0f0" media="(prefers-color-scheme: light)">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  
-  <!-- Header -->
-  <header id="header-info">
-    Device-info Header
-  </header>
+  <h1 id="title">Device-info</h1>
 
-  <!-- Title -->
-  <h1 id="title">
-    Device-info
-  </h1>
-
-  <!-- Controls: Language & Mode -->
   <div class="controls" role="group" aria-label="Language and Mode Switch">
     <button id="btn-ja" class="active" aria-pressed="true" type="button">日本語</button>
     <button id="btn-en" aria-pressed="false" type="button">English</button>
@@ -36,61 +34,48 @@
     <button id="btn-dark" class="active" aria-pressed="true" type="button">ダーク / Dark</button>
   </div>
 
-  <!-- OS Section -->
   <section aria-labelledby="cat-os">
     <h2 id="cat-os"></h2>
-    
     <div class="subhead" id="os-ua-ch-label"></div>
     <table id="table-os-ua-ch"></table>
-    
     <div class="subhead" id="os-ua-label"></div>
     <table id="table-os-ua"></table>
   </section>
 
-  <!-- Browser Section -->
   <section aria-labelledby="cat-browser">
     <h2 id="cat-browser"></h2>
-    
     <div class="subhead" id="browser-ua-ch-label"></div>
     <table id="table-browser-ua-ch"></table>
-    
     <div class="subhead" id="browser-ua-label"></div>
     <table id="table-browser-ua"></table>
   </section>
 
-  <!-- Screen Section -->
   <section aria-labelledby="cat-screen">
     <h2 id="cat-screen"></h2>
     <table id="table-screen"></table>
   </section>
 
-  <!-- CPU Section -->
   <section aria-labelledby="cat-cpu">
     <h2 id="cat-cpu"></h2>
     <table id="table-cpu"></table>
   </section>
 
-  <!-- Network Section -->
   <section aria-labelledby="cat-network">
     <h2 id="cat-network"></h2>
     <table id="table-network"></table>
   </section>
 
-  <!-- Other Section -->
   <section aria-labelledby="cat-other">
     <h2 id="cat-other"></h2>
     <table id="table-other"></table>
   </section>
 
-  <!-- Footer -->
   <footer>
     <div id="footer-copyright"></div>
     <div id="footer-warning"></div>
     <div id="footer-library"></div>
   </footer>
 
-  <!-- JS -->
   <script src="main.js"></script>
-
 </body>
 </html>
