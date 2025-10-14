@@ -46,9 +46,9 @@
         copyright: "© 2025 device-info",
         warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
-          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
-          <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
-          <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
+          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, 
+          <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>, 
+          <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>, 
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
       }
     },
@@ -98,15 +98,14 @@
         copyright: "© 2025 device-info",
         warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
-          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
-          <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
-          <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
+          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, 
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>, 
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>, 
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
       }
     }
   };
 
-  // --- DOM Elements ---
   const titleEl = document.getElementById('title');
   const btnJa = document.getElementById('btn-ja');
   const btnEn = document.getElementById('btn-en');
@@ -116,7 +115,6 @@
   const footerCopyright = document.getElementById('footer-copyright');
   const footerWarning = document.getElementById('footer-warning');
   const footerLibrary = document.getElementById('footer-library');
-
   const tables = {
     os_ua_ch: document.getElementById('table-os-ua-ch'),
     os_ua: document.getElementById('table-os-ua'),
@@ -127,12 +125,10 @@
     network: document.getElementById('table-network'),
     other: document.getElementById('table-other')
   };
-
   const osUaChLabel = document.getElementById('os-ua-ch-label');
   const osUaLabel = document.getElementById('os-ua-label');
   const browserUaChLabel = document.getElementById('browser-ua-ch-label');
   const browserUaLabel = document.getElementById('browser-ua-label');
-
   const sectionTitles = {
     os: document.getElementById('cat-os'),
     browser: document.getElementById('cat-browser'),
@@ -142,128 +138,183 @@
     other: document.getElementById('cat-other')
   };
 
-  // --- State ---
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
-  let darkMode = localStorage.getItem("mode") === "dark" || 
-                 (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  // --- Helper Functions ---
-  function createRow(label, value) {
+  function createRow(label, value){
     const row = document.createElement('tr');
     row.innerHTML = `<th scope="row">${label}</th><td>${value || dict[currentLang].unknown}</td>`;
     return row;
   }
 
-  async function fetchIPData() {
-    const ipv4 = await fetch('https://api.ipify.org?format=json')
-      .then(r => r.json()).then(d => d.ip || dict[currentLang].unknown)
-      .catch(() => dict[currentLang].unknown);
-    const ipv6 = await fetch('https://api64.ipify.org?format=json')
-      .then(r => r.json()).then(d => d.ip || dict[currentLang].unknown)
-      .catch(() => dict[currentLang].unknown);
-    const currentIP = (ipv6 && ipv6 !== dict[currentLang].unknown) ? ipv6 : ipv4;
-    return { ipv4, ipv6, currentIP };
-  }
-
-  function getCpuMemory() {
-    const cores = navigator.hardwareConcurrency || dict[currentLang].unknown;
-    let memory = navigator.deviceMemory || dict[currentLang].unknown;
-    if (typeof memory === "number") memory = Math.min(memory, 8) + " GB"; // 最大8GB制限
-    return { cores, memory };
-  }
-
-  function getCpuName() {
-    const ua = navigator.userAgent;
-    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?"ARM (推定)":"ARM (Estimated)";
-    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?"x64 (推定)":"x64 (Estimated)";
-    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?"x86 (推定)":"x86 (Estimated)";
-    return dict[currentLang].not_available;
+  async function getOsBrowserByUACh() {
+    const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
+    if (navigator.userAgentData?.getHighEntropyValues) {
+      try {
+        const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
+        result.os = ch.platform || "";
+        result.version = ch.platformVersion || "";
+        result.device = ch.model || "";
+        if (navigator.userAgentData.brands?.length) {
+          const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
+          if (b) { result.browser = b.brand; result.browserVersion = b.version; }
+        }
+      } catch(e){}
+    }
+    return result;
   }
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
-    let os=dict[currentLang].unknown, version=dict[currentLang].unknown, device=dict[currentLang].unknown;
-    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; device=(ua.match(/;\s?([^;\/]+)\s+Build/i)||[])[1]||device; }
-    else if (/iPhone|iPad|iPod/.test(ua)) { os=/iPhone/.test(ua)?"iOS":"iPadOS"; version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; device=/iPhone/.test(ua)?"iPhone":"iPad"; }
-    else if (/Windows NT/.test(ua)) { os="Windows"; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; version=map[(ua.match(/Windows NT ([\d.]+)/)||[])[1]]||version; device="PC"; }
-    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device="Mac"; }
-    else if (/Linux/.test(navigator.platform)) { os="Linux"; device=currentLang==="ja"?"Linux端末":"Linux device"; }
+    let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
+    if (/Android/.test(ua)) {
+      os="Android";
+      version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version;
+      device=(ua.match(/;\s?([^;/]+)\s+Build/i)||[])[1]||device;
+    } else if (/iPhone|iPad|iPod/.test(ua)) {
+      version=(ua.match(/OS (\d+)_/i)||[])[1]||version;
+      device=/iPhone/.test(ua)?"iPhone":"iPad";
+      os=device==="iPhone"?"iOS":"iPadOS";
+    } else if (/Windows NT/.test(ua)) {
+      const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1];
+      const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"};
+      os="Windows"; version=map[ver]||ver||version; device="PC";
+    } else if (/Mac OS X/.test(ua)) {
+      os="macOS";
+      version=(ua.match(/Mac OS X (\d+)[_.](\d+)/)||[]).slice(1,3).join(".")||version;
+      device="Mac";
+    } else if (/Linux/.test(navigator.platform)) {
+      os="Linux";
+      device=currentLang==="ja"?"Linux端末":"Linux device";
+    }
     let browser=dict[currentLang].unknown,bver=dict[currentLang].unknown;
-    if (/Edg\//.test(ua)) browser="Edge", bver=(ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;
-    else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver;
-    else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver;
-    else if (/Firefox\//.test(ua)) browser="Firefox", bver=(ua.match(/Firefox\/([\d\.]+)/)||[])[1]||bver;
-    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;
+    if (/Edg\//.test(ua)) browser="Microsoft Edge", bver=(ua.match(/Edg\/([\d.]+)/)||[])[1]||bver;
+    else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d.]+)/)||[])[1]||bver;
+    else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d.]+)/)||[])[1]||bver;
+    else if (/Firefox\//.test(ua)) browser="Firefox", bver=(ua.match(/Firefox\/([\d.]+)/)||[])[1]||bver;
+    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d.]+)/)||[])[1]||bver;
     return { os, version, device, browser, browserVersion:bver };
   }
 
-  function applyTheme() {
-    document.body.classList.toggle("light", !darkMode);
-    document.body.classList.toggle("dark", darkMode);
-    btnDark.classList.toggle("active", darkMode);
-    btnLight.classList.toggle("active", !darkMode);
-    btnDark.setAttribute("aria-pressed", darkMode);
-    btnLight.setAttribute("aria-pressed", !darkMode);
-    localStorage.setItem("mode", darkMode ? "dark" : "light");
+  function getCpuNameByUA() {
+    const ua = navigator.userAgent;
+    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?"ARM (推定)":"ARM (Estimated)";
+    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?"x64 (推定)":"x64 (Estimated)";
+    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?"x86 (推定)":"x86 (Estimated)";
+    if (/PPC|PowerPC/i.test(ua)) return currentLang==="ja"?"PowerPC (推定)":"PowerPC (Estimated)";
+    if (/mips/i.test(ua)) return currentLang==="ja"?"MIPS (推定)":"MIPS (Estimated)";
+    return dict[currentLang].not_available;
   }
 
-  function applyLang() {
-    const lang = dict[currentLang];
-    titleEl.textContent = lang.title;
-    Object.keys(sectionTitles).forEach(k => sectionTitles[k].textContent = lang.category[k]);
-    footerCopyright.innerHTML = lang.footer.copyright;
-    footerWarning.innerHTML = lang.footer.warning;
-    footerLibrary.innerHTML = lang.footer.library;
-
-    btnJa.classList.toggle("active", currentLang==="ja");
-    btnEn.classList.toggle("active", currentLang==="en");
-    btnJa.setAttribute("aria-pressed", currentLang==="ja");
-    btnEn.setAttribute("aria-pressed", currentLang==="en");
-
-    updateInfo();
-    localStorage.setItem("lang", currentLang);
+  async function fetchIPData() {
+    const ipv4 = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const currentIP = (ipv6 && ipv6 !== dict[currentLang].unknown) ? ipv6 : ipv4;
+    return { ipv4, ipv6, currentIP };
   }
 
   async function updateInfo() {
     const lang = dict[currentLang];
-    Object.values(tables).forEach(tbl => tbl.innerHTML = '');
-    const uaData = getOsBrowserByUA();
-    const cpuMem = getCpuMemory();
-    const ipData = await fetchIPData();
+    Object.values(tables).forEach(tbl=>tbl.innerHTML='');
+    const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
 
-    // OS テーブル
+    // OS UA-CH
     osUaChLabel.textContent = lang.os_ch;
-    osUaLabel.textContent = lang.os_ua;
-    [[lang.os, uaData.os],[lang.version, uaData.version],[lang.device, uaData.device]].forEach(([l,v]) => tables.os_ua.appendChild(createRow(l,v)));
+    [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
 
-    // Browser テーブル
+    // OS UA
+    osUaLabel.textContent = lang.os_ua;
+    [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
+
+    // Browser UA-CH
     browserUaChLabel.textContent = lang.browser_ch;
+    [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
+
+    // Browser UA
     browserUaLabel.textContent = lang.browser_ua;
-    [[lang.browser, uaData.browser],[lang.browserVersion, uaData.browserVersion],[lang.ua, navigator.userAgent]].forEach(([l,v]) => tables.browser_ua.appendChild(createRow(l,v)));
+    [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
 
     // Screen
-    [[lang.screen, `${screen.width}×${screen.height}`],[lang.viewport, `${window.innerWidth}×${window.innerHeight}`],[lang.colorDepth, screen.colorDepth],[lang.pixelDepth, screen.pixelDepth]].forEach(([l,v]) => tables.screen.appendChild(createRow(l,v)));
+    [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
 
-    // CPU
-    [[lang.cpu, cpuMem.cores],[lang.cpuName, getCpuName()],[lang.memory, cpuMem.memory]].forEach(([l,v]) => tables.cpu.appendChild(createRow(l,v)));
+    // CPU & Memory
+    const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
+    const memory = typeof navigator.deviceMemory==="number"?`${navigator.deviceMemory} GB`:lang.unknown;
+    [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
     // Network
-    [[lang.ipv4, ipData.ipv4],[lang.ipv6, ipData.ipv6],[lang.ip, ipData.currentIP],[lang.online, navigator.onLine?lang.online_yes:lang.online_no]].forEach(([l,v]) => tables.network.appendChild(createRow(l,v)));
+    const {ipv4,ipv6,currentIP} = await fetchIPData();
+    const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
+    [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
 
     // Other
-    [[lang.language, navigator.language],[lang.cookiesEnabled, navigator.cookieEnabled],[lang.fetchedAt, new Date().toLocaleString()],[lang.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone]].forEach(([l,v]) => tables.other.appendChild(createRow(l,v)));
+    [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
+
+    // Footer
+    footerWarning.textContent = lang.footer.warning;
+    footerLibrary.innerHTML = lang.footer.library;
   }
 
-  // --- Event Listeners ---
-  btnJa.addEventListener('click', ()=>{currentLang="ja"; applyLang();});
-  btnEn.addEventListener('click', ()=>{currentLang="en"; applyLang();});
-  btnLight.addEventListener('click', ()=>{darkMode=false; applyTheme();});
-  btnDark.addEventListener('click', ()=>{darkMode=true; applyTheme();});
+  function updateCurrentTime() {
+    const nowStr = new Date().toLocaleString();
+    const rows = tables.other.querySelectorAll('tr');
+    for(const row of rows){ if(row.firstElementChild?.textContent===dict[currentLang].now){ row.lastElementChild.textContent=nowStr; break; } }
+  }
 
-  window.addEventListener('online', updateInfo);
-  window.addEventListener('offline', updateInfo);
+  function setLang(lang){
+    currentLang=lang;
+    localStorage.setItem("lang",lang);
+    titleEl.textContent=dict[lang].title;
+    Object.entries(dict[lang].category).forEach(([key,label])=>{ if(sectionTitles[key]) sectionTitles[key].textContent=label; });
+    btnJa.classList.toggle('active',lang==='ja');
+    btnEn.classList.toggle('active',lang==='en');
+    btnJa.setAttribute('aria-pressed',lang==='ja');
+    btnEn.setAttribute('aria-pressed',lang==='en');
+    btnLight.textContent=dict[lang].light+" / Light";
+    btnDark.textContent=dict[lang].dark+" / Dark";
+    document.body.setAttribute("lang",lang);
+    updateInfo();
+  }
 
-  // --- Initialize ---
-  applyTheme();
-  applyLang();
+  function setMode(isDark){
+    darkMode=isDark;
+    localStorage.setItem("mode",isDark?"dark":"light");
+    document.body.classList.toggle('light',!darkMode);
+    btnLight.classList.toggle('active',!darkMode);
+    btnDark.classList.toggle('active',darkMode);
+    btnLight.setAttribute('aria-pressed',!darkMode);
+    btnDark.setAttribute('aria-pressed',darkMode);
+    favicon.href=isDark?'icon-dark.png':'icon-light.png';
+  }
+
+  function toggleLanguageOnlyDisplay(lang){
+    for(const key in sectionTitles){ const h2=sectionTitles[key]; if(h2) h2.textContent=dict[lang].category[key]; }
+    btnLight.textContent=dict[lang].light;
+    btnDark.textContent=dict[lang].dark;
+  }
+
+  btnJa.addEventListener('click',()=>{ setLang('ja'); toggleLanguageOnlyDisplay('ja'); });
+  btnEn.addEventListener('click',()=>{ setLang('en'); toggleLanguageOnlyDisplay('en'); });
+  btnLight.addEventListener('click',()=>setMode(false));
+  btnDark.addEventListener('click',()=>setMode(true));
+
+  // Footer copyright by host
+  (function() {
+    const siteConfig = {
+      "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
+      "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+      "device-info.hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+      "default": { baseYear: 2025, user: "device-info", link: "" }
+    };
+    const host = window.location.hostname;
+    const config = siteConfig[host] || siteConfig["default"];
+    const year = new Date().getFullYear();
+    footerCopyright.innerHTML = `© ${config.baseYear===year?year:config.baseYear+"-"+year} ${config.user}`;
+  })();
+
+  setMode(darkMode);
+  setLang(currentLang);
+  updateInfo();
+  setInterval(updateCurrentTime,1000);
+
 })();
