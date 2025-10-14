@@ -46,9 +46,9 @@
         copyright: "© 2025 device-info",
         warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
-          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, 
-          <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>, 
-          <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>, 
+          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
+          <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
+          <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
       }
     },
@@ -78,7 +78,7 @@
       pixelDepth: "Pixel Depth",
       cpu: "CPU Cores",
       cpuName: "CPU Name",
-      memory: "Memory (approx., max 8GB)",
+      memory: "Memory (approx., up to 8GB)",
       ipv4: "IPv4 Address",
       ipv6: "IPv6 Address",
       ip: "Current IP",
@@ -98,9 +98,9 @@
         copyright: "© 2025 device-info",
         warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
-          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>, 
-          <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>, 
-          <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>, 
+          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
       }
     }
@@ -141,12 +141,6 @@
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  function createRow(label, value){
-    const row = document.createElement('tr');
-    row.innerHTML = `<th scope="row">${label}</th><td>${value || dict[currentLang].unknown}</td>`;
-    return row;
-  }
-
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
@@ -167,32 +161,17 @@
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
     let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
-    if (/Android/.test(ua)) {
-      os="Android";
-      version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version;
-      device=(ua.match(/;\s?([^;/]+)\s+Build/i)||[])[1]||device;
-    } else if (/iPhone|iPad|iPod/.test(ua)) {
-      version=(ua.match(/OS (\d+)_/i)||[])[1]||version;
-      device=/iPhone/.test(ua)?"iPhone":"iPad";
-      os=device==="iPhone"?"iOS":"iPadOS";
-    } else if (/Windows NT/.test(ua)) {
-      const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1];
-      const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"};
-      os="Windows"; version=map[ver]||ver||version; device="PC";
-    } else if (/Mac OS X/.test(ua)) {
-      os="macOS";
-      version=(ua.match(/Mac OS X (\d+)[_.](\d+)/)||[]).slice(1,3).join(".")||version;
-      device="Mac";
-    } else if (/Linux/.test(navigator.platform)) {
-      os="Linux";
-      device=currentLang==="ja"?"Linux端末":"Linux device";
-    }
+    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; device=(ua.match(/;\s?([^;\/]+)\s+Build/i)||[])[1]||device; }
+    else if (/iPhone|iPad|iPod/.test(ua)) { version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; device=/iPhone/.test(ua)?"iPhone":"iPad"; os=device==="iPhone"?"iOS":"iPadOS"; }
+    else if (/Windows NT/.test(ua)) { const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; os="Windows"; version=map[ver]||ver||version; device="PC"; }
+    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device="Mac"; }
+    else if (/Linux/.test(navigator.platform)) { os="Linux"; device=currentLang==="ja"?"Linux端末":"Linux device"; }
     let browser=dict[currentLang].unknown,bver=dict[currentLang].unknown;
-    if (/Edg\//.test(ua)) browser="Microsoft Edge", bver=(ua.match(/Edg\/([\d.]+)/)||[])[1]||bver;
-    else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d.]+)/)||[])[1]||bver;
-    else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d.]+)/)||[])[1]||bver;
-    else if (/Firefox\//.test(ua)) browser="Firefox", bver=(ua.match(/Firefox\/([\d.]+)/)||[])[1]||bver;
-    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d.]+)/)||[])[1]||bver;
+    if (/Edg\//.test(ua)) browser="Microsoft Edge", bver=(ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;
+    else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver;
+    else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver;
+    else if (/Firefox\//.test(ua)) browser="Firefox", bver=(ua.match(/Firefox\/([\d\.]+)/)||[])[1]||bver;
+    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;
     return { os, version, device, browser, browserVersion:bver };
   }
 
@@ -206,10 +185,16 @@
     return dict[currentLang].not_available;
   }
 
+  function createRow(label,value){ 
+    const row=document.createElement('tr'); 
+    row.innerHTML=`<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`; 
+    return row; 
+  }
+
   async function fetchIPData() {
-    const ipv4 = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const currentIP = (ipv6 && ipv6 !== dict[currentLang].unknown) ? ipv6 : ipv4;
+    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const currentIP = (ipv6 && ipv6!==dict[currentLang].unknown)?ipv6:ipv4;
     return { ipv4, ipv6, currentIP };
   }
 
@@ -218,39 +203,30 @@
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
 
-    // OS UA-CH
     osUaChLabel.textContent = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
 
-    // OS UA
     osUaLabel.textContent = lang.os_ua;
     [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
 
-    // Browser UA-CH
     browserUaChLabel.textContent = lang.browser_ch;
     [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
 
-    // Browser UA
     browserUaLabel.textContent = lang.browser_ua;
     [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
 
-    // Screen
     [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
 
-    // CPU & Memory
     const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
-    const memory = typeof navigator.deviceMemory==="number"?`${navigator.deviceMemory} GB`:lang.unknown;
+    const memory = typeof navigator.deviceMemory==="number"?`${navigator.deviceMemory} GB (最大 8GBまで概算)`:lang.unknown;
     [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
-    // Network
     const {ipv4,ipv6,currentIP} = await fetchIPData();
     const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
     [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
 
-    // Other
     [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
-    // Footer
     footerWarning.textContent = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
@@ -270,8 +246,8 @@
     btnEn.classList.toggle('active',lang==='en');
     btnJa.setAttribute('aria-pressed',lang==='ja');
     btnEn.setAttribute('aria-pressed',lang==='en');
-    btnLight.textContent=dict[lang].light+" / Light";
-    btnDark.textContent=dict[lang].dark+" / Dark";
+    btnLight.textContent=dict[lang].light;
+    btnDark.textContent=dict[lang].dark;
     document.body.setAttribute("lang",lang);
     updateInfo();
   }
@@ -287,18 +263,16 @@
     favicon.href=isDark?'icon-dark.png':'icon-light.png';
   }
 
-  function toggleLanguageOnlyDisplay(lang){
-    for(const key in sectionTitles){ const h2=sectionTitles[key]; if(h2) h2.textContent=dict[lang].category[key]; }
-    btnLight.textContent=dict[lang].light;
-    btnDark.textContent=dict[lang].dark;
-  }
-
-  btnJa.addEventListener('click',()=>{ setLang('ja'); toggleLanguageOnlyDisplay('ja'); });
-  btnEn.addEventListener('click',()=>{ setLang('en'); toggleLanguageOnlyDisplay('en'); });
+  btnJa.addEventListener('click',()=>setLang('ja'));
+  btnEn.addEventListener('click',()=>setLang('en'));
   btnLight.addEventListener('click',()=>setMode(false));
   btnDark.addEventListener('click',()=>setMode(true));
 
-  // Footer copyright by host
+  setMode(darkMode);
+  setLang(currentLang);
+  setInterval(updateCurrentTime,1000);
+
+  // Footer 自動更新
   (function() {
     const siteConfig = {
       "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
@@ -308,13 +282,14 @@
     };
     const host = window.location.hostname;
     const config = siteConfig[host] || siteConfig["default"];
-    const year = new Date().getFullYear();
-    footerCopyright.innerHTML = `© ${config.baseYear===year?year:config.baseYear+"-"+year} ${config.user}`;
+    const currentYear = new Date().getFullYear();
+    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+    if (footerCopyright) {
+      if (config.link) {
+        footerCopyright.innerHTML = `© ${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`;
+      } else {
+        footerCopyright.textContent = `© ${yearText} device-info`;
+      }
+    }
   })();
-
-  setMode(darkMode);
-  setLang(currentLang);
-  updateInfo();
-  setInterval(updateCurrentTime,1000);
-
 })();
