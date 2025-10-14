@@ -1,13 +1,16 @@
 :root {
-  --bg-dark: #001b33;
-  --bg-light: #f0f0f0;
-  --text-dark: #a3c4f3;
-  --text-light: #202020;
-  --accent-dark: #4da6ff;
-  --accent-light: #1a5fff;
-  --font-mono: 'Share Tech Mono', monospace;
-  --border-light: #bbb;
-  --border-dark: #444;
+  /* カラーセット：モダンフラット、落ち着いたブルー系 */
+  --bg-dark: #0f172a;
+  --bg-light: #f5f7fa;
+  --text-dark: #e0e7ff;
+  --text-light: #1f2937;
+  --accent-dark: #3b82f6;
+  --accent-light: #2563eb;
+  --border-dark: #334155;
+  --border-light: #cbd5e1;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 12px;
+  --transition: 0.3s;
 }
 
 body {
@@ -20,7 +23,7 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 0 1rem 2rem;
-  transition: background 0.3s, color 0.3s;
+  transition: background var(--transition), color var(--transition);
 }
 
 body.light {
@@ -28,31 +31,29 @@ body.light {
   color: var(--text-light);
 }
 
-header, .controls, section, footer {
-  width: 100%;
-}
-
 header {
+  width: 100%;
   margin: 1rem auto 1.5rem;
+  padding: 0.6rem 1rem;
   font-size: 0.9rem;
   line-height: 1.4;
-  background: rgba(0, 116, 217, 0.15);
-  border-radius: 12px;
-  padding: 0.6rem 1rem;
-  color: var(--accent-dark);
-  font-weight: 600;
   text-align: center;
+  font-weight: 600;
+  border-radius: var(--radius);
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-dark);
   user-select: none;
+  transition: background var(--transition), color var(--transition);
 }
 
 body.light header {
-  background: rgba(26, 95, 255, 0.15);
+  background: rgba(37, 99, 235, 0.15);
   color: var(--accent-light);
 }
 
 h1 {
   margin: 0 0 1rem;
-  font-size: 1.8rem;
+  font-size: 2rem;
   text-align: center;
   user-select: none;
 }
@@ -72,8 +73,8 @@ h1 {
   background: transparent;
   color: var(--text-dark);
   cursor: pointer;
-  border-radius: 8px;
-  transition: 0.3s;
+  border-radius: var(--radius);
+  transition: var(--transition);
   user-select: none;
 }
 
@@ -92,16 +93,18 @@ body.light .controls button.active {
 }
 
 section {
+  width: 100%;
   margin-bottom: 2rem;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.05);
   padding: 1rem;
-  overflow-x: auto; /* 横スクロール対応 */
+  overflow-x: auto;
+  transition: background var(--transition);
 }
 
 body.light section {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 section h2 {
@@ -115,15 +118,16 @@ table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  min-width: 300px; /* 横スクロールで崩れ防止 */
+  min-width: 300px;
 }
 
 th, td {
-  padding: 0.5rem 0.8rem;
+  padding: 0.6rem 0.8rem;
   border-bottom: 1px solid var(--border-dark);
   text-align: left;
   word-break: break-word;
   vertical-align: top;
+  transition: border-color var(--transition);
 }
 
 body.light th, body.light td {
@@ -133,8 +137,8 @@ body.light th, body.light td {
 th {
   font-weight: 600;
   width: 40%;
-  user-select: none;
   color: var(--accent-dark);
+  user-select: none;
 }
 
 body.light th {
@@ -157,6 +161,7 @@ footer {
   padding-top: 1rem;
   user-select: none;
   color: var(--text-dark);
+  transition: color var(--transition);
 }
 
 body.light footer {
@@ -173,13 +178,14 @@ footer a:hover {
 }
 
 .subhead {
-  font-size: 0.97em;
-  color: #888;
-  margin-bottom: .3em;
+  font-size: 0.95em;
+  color: #9ca3af;
+  margin-bottom: 0.3em;
+  user-select: none;
 }
 
 @media (max-width: 480px) {
-  h1 { font-size: 1.5rem; }
+  h1 { font-size: 1.6rem; }
   .controls button { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
   th, td { padding: 0.4rem 0.6rem; }
   section { padding: 0.8rem; }
