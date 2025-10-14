@@ -1,4 +1,5 @@
 (function () {
+  // ======== 言語データ ========
   const dict = {
     ja: {
       title: "デバイス情報",
@@ -14,32 +15,31 @@
         network: "ネットワーク情報",
         other: "その他情報"
       },
-      os: "OS名",
-      version: "バージョン",
-      device: "端末名",
-      browser: "ブラウザ",
-      browserVersion: "バージョン",
-      ua: "ユーザーエージェント",
-      screen: "画面解像度",
-      viewport: "ビューポート",
-      colorDepth: "色深度",
-      pixelDepth: "ピクセル深度",
-      cpu: "CPUコア数",
-      cpuName: "CPU名",
-      memory: "メモリ(概算・最大8GBまで)",
-      ipv4: "IPv4アドレス",
-      ipv6: "IPv6アドレス",
-      ip: "現在使用IP",
-      online: "オンライン状態",
-      language: "ブラウザ言語",
-      cookiesEnabled: "クッキー有効",
-      fetchedAt: "取得時刻",
-      now: "現在時刻",
-      timezone: "タイムゾーン",
-      unknown: "不明",
-      not_available: "取得不可",
-      online_yes: "オンライン",
-      online_no: "オフライン",
+      os: `<span class="selectable">OS名</span>`,
+      version: `<span class="selectable">バージョン</span>`,
+      device: `<span class="selectable">端末名</span>`,
+      browser: `<span class="selectable">ブラウザ</span>`,
+      browserVersion: `<span class="selectable">バージョン</span>`,
+      ua: `<span class="selectable">ユーザーエージェント</span>`,
+      screen: `<span class="selectable">画面解像度</span>`,
+      viewport: `<span class="selectable">ビューポート</span>`,
+      colorDepth: `<span class="selectable">色深度</span>`,
+      pixelDepth: `<span class="selectable">ピクセル深度</span>`,
+      cpu: `<span class="selectable">CPUコア数</span>`,
+      cpuName: `<span class="selectable">CPU名</span>`,
+      memory: `<span class="selectable">最大 8GBまで</span>`,
+      ipv4: `<span class="selectable">IPv4アドレス</span>`,
+      ipv6: `<span class="selectable">IPv6アドレス</span>`,
+      ip: `<span class="selectable">現在使用IP</span>`,
+      online: `<span class="selectable">オンライン状態</span>`,
+      language: `<span class="selectable">ブラウザ言語</span>`,
+      cookiesEnabled: `<span class="selectable">クッキー有効</span>`,
+      fetchedAt: `<span class="selectable">取得時刻</span>`,
+      now: `<span class="selectable">現在時刻</span>`,
+      timezone: `<span class="selectable">タイムゾーン</span>`,
+      unknown: `<span class="selectable">不明</span>`,
+      online_yes: `<span class="selectable">オンライン</span>`,
+      online_no: `<span class="selectable">オフライン</span>`,
       light: "ライト",
       dark: "ダーク",
       footer: {
@@ -66,32 +66,31 @@
         network: "Network Information",
         other: "Other Information"
       },
-      os: "Operating System",
-      version: "Version",
-      device: "Device Name",
-      browser: "Browser",
-      browserVersion: "Version",
-      ua: "User Agent",
-      screen: "Screen Resolution",
-      viewport: "Viewport",
-      colorDepth: "Color Depth",
-      pixelDepth: "Pixel Depth",
-      cpu: "CPU Cores",
-      cpuName: "CPU Name",
-      memory: "Memory (approx., up to 8GB)",
-      ipv4: "IPv4 Address",
-      ipv6: "IPv6 Address",
-      ip: "Current IP",
-      online: "Online Status",
-      language: "Browser Language",
-      cookiesEnabled: "Cookies Enabled",
-      fetchedAt: "Fetched At",
-      now: "Current Time",
-      timezone: "Timezone",
-      unknown: "Unknown",
-      not_available: "Not available",
-      online_yes: "Online",
-      online_no: "Offline",
+      os: `<span class="selectable">Operating System</span>`,
+      version: `<span class="selectable">Version</span>`,
+      device: `<span class="selectable">Device Name</span>`,
+      browser: `<span class="selectable">Browser</span>`,
+      browserVersion: `<span class="selectable">Version</span>`,
+      ua: `<span class="selectable">User Agent</span>`,
+      screen: `<span class="selectable">Screen Resolution</span>`,
+      viewport: `<span class="selectable">Viewport</span>`,
+      colorDepth: `<span class="selectable">Color Depth</span>`,
+      pixelDepth: `<span class="selectable">Pixel Depth</span>`,
+      cpu: `<span class="selectable">CPU Cores</span>`,
+      cpuName: `<span class="selectable">CPU Name</span>`,
+      memory: `<span class="selectable">Max 8GB</span>`,
+      ipv4: `<span class="selectable">IPv4 Address</span>`,
+      ipv6: `<span class="selectable">IPv6 Address</span>`,
+      ip: `<span class="selectable">Current IP</span>`,
+      online: `<span class="selectable">Online Status</span>`,
+      language: `<span class="selectable">Browser Language</span>`,
+      cookiesEnabled: `<span class="selectable">Cookies Enabled</span>`,
+      fetchedAt: `<span class="selectable">Fetched At</span>`,
+      now: `<span class="selectable">Current Time</span>`,
+      timezone: `<span class="selectable">Timezone</span>`,
+      unknown: `<span class="selectable">Unknown</span>`,
+      online_yes: `<span class="selectable">Online</span>`,
+      online_no: `<span class="selectable">Offline</span>`,
       light: "Light",
       dark: "Dark",
       footer: {
@@ -106,6 +105,7 @@
     }
   };
 
+  // ======== DOM要素 ========
   const titleEl = document.getElementById('title');
   const btnJa = document.getElementById('btn-ja');
   const btnEn = document.getElementById('btn-en');
@@ -141,6 +141,7 @@
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+  // ======== UA-CH取得 ========
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
@@ -158,6 +159,7 @@
     return result;
   }
 
+  // ======== UA取得 ========
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
     let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
@@ -175,22 +177,25 @@
     return { os, version, device, browser, browserVersion:bver };
   }
 
+  // ======== CPU名推定 ========
   function getCpuNameByUA() {
     const ua = navigator.userAgent;
-    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?"ARM (推定)":"ARM (Estimated)";
-    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?"x64 (推定)":"x64 (Estimated)";
-    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?"x86 (推定)":"x86 (Estimated)";
-    if (/PPC|PowerPC/i.test(ua)) return currentLang==="ja"?"PowerPC (推定)":"PowerPC (Estimated)";
-    if (/mips/i.test(ua)) return currentLang==="ja"?"MIPS (推定)":"MIPS (Estimated)";
+    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?`ARM (推定)`:`ARM (Estimated)`;
+    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?`x64 (推定)`:`x64 (Estimated)`;
+    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?`x86 (推定)`:`x86 (Estimated)`;
+    if (/PPC|PowerPC/i.test(ua)) return currentLang==="ja"?`PowerPC (推定)`:`PowerPC (Estimated)`;
+    if (/mips/i.test(ua)) return currentLang==="ja"?`MIPS (推定)`:`MIPS (Estimated)`;
     return dict[currentLang].not_available;
   }
 
+  // ======== テーブル行作成 ========
   function createRow(label,value){ 
     const row=document.createElement('tr'); 
     row.innerHTML=`<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`; 
     return row; 
   }
 
+  // ======== IP取得 ========
   async function fetchIPData() {
     const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
     const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
@@ -198,27 +203,28 @@
     return { ipv4, ipv6, currentIP };
   }
 
+  // ======== 情報更新 ========
   async function updateInfo() {
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
 
-    osUaChLabel.textContent = lang.os_ch;
+    osUaChLabel.innerHTML = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
 
-    osUaLabel.textContent = lang.os_ua;
+    osUaLabel.innerHTML = lang.os_ua;
     [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
 
-    browserUaChLabel.textContent = lang.browser_ch;
+    browserUaChLabel.innerHTML = lang.browser_ch;
     [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
 
-    browserUaLabel.textContent = lang.browser_ua;
+    browserUaLabel.innerHTML = lang.browser_ua;
     [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
 
     [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
 
     const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
-    const memory = typeof navigator.deviceMemory==="number"?`${navigator.deviceMemory} GB (最大 8GBまで概算)`:lang.unknown;
+    const memory = typeof navigator.deviceMemory==="number"?`${Math.min(navigator.deviceMemory,8)} GB`:lang.unknown;
     [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
     const {ipv4,ipv6,currentIP} = await fetchIPData();
@@ -227,16 +233,18 @@
 
     [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
-    footerWarning.textContent = lang.footer.warning;
+    footerWarning.innerHTML = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
 
+  // ======== 現在時刻更新 ========
   function updateCurrentTime() {
     const nowStr = new Date().toLocaleString();
     const rows = tables.other.querySelectorAll('tr');
-    for(const row of rows){ if(row.firstElementChild?.textContent===dict[currentLang].now){ row.lastElementChild.textContent=nowStr; break; } }
+    for(const row of rows){ if(row.firstElementChild?.textContent===dict[currentLang].now.replace(/<[^>]+>/g,'')){ row.lastElementChild.textContent=nowStr; break; } }
   }
 
+  // ======== 言語切替 ========
   function setLang(lang){
     currentLang=lang;
     localStorage.setItem("lang",lang);
@@ -246,12 +254,13 @@
     btnEn.classList.toggle('active',lang==='en');
     btnJa.setAttribute('aria-pressed',lang==='ja');
     btnEn.setAttribute('aria-pressed',lang==='en');
-    btnLight.textContent=dict[lang].light;
-    btnDark.textContent=dict[lang].dark;
+    btnLight.textContent=dict[lang].light+" / Light";
+    btnDark.textContent=dict[lang].dark+" / Dark";
     document.body.setAttribute("lang",lang);
     updateInfo();
   }
 
+  // ======== ダーク/ライト切替 ========
   function setMode(isDark){
     darkMode=isDark;
     localStorage.setItem("mode",isDark?"dark":"light");
@@ -263,16 +272,18 @@
     favicon.href=isDark?'icon-dark.png':'icon-light.png';
   }
 
-  btnJa.addEventListener('click',()=>setLang('ja'));
-  btnEn.addEventListener('click',()=>setLang('en'));
+  // ======== ボタンイベント ========
+  btnJa.addEventListener('click',()=>{ setLang('ja'); });
+  btnEn.addEventListener('click',()=>{ setLang('en'); });
   btnLight.addEventListener('click',()=>setMode(false));
   btnDark.addEventListener('click',()=>setMode(true));
 
+  // ======== 初期化 ========
   setMode(darkMode);
   setLang(currentLang);
   setInterval(updateCurrentTime,1000);
 
-  // Footer 自動更新
+  // ======== フッター自動設定 ========
   (function() {
     const siteConfig = {
       "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
