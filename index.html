@@ -5,15 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Device-info</title>
   <meta name="description" content="Deviceがページアクセス時に送る情報を使って表示します。※表示情報は実際の端末と異なる場合があります" />
+  
+  <!-- Favicon -->
   <link id="favicon" rel="icon" type="image/png" href="icon-dark.png" />
-  <meta name="theme-color" content="#001b33" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f0f0f0" media="(prefers-color-scheme: light)">
+  
+  <!-- Theme Colors -->
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
+  
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header id="header-info"></header>
-  <h1 id="title">Device-info</h1>
+  
+  <!-- Header -->
+  <header id="header-info">
+    Device-info Header
+  </header>
 
+  <!-- Title -->
+  <h1 id="title">
+    Device-info
+  </h1>
+
+  <!-- Controls: Language & Mode -->
   <div class="controls" role="group" aria-label="Language and Mode Switch">
     <button id="btn-ja" class="active" aria-pressed="true" type="button">日本語</button>
     <button id="btn-en" aria-pressed="false" type="button">English</button>
@@ -21,48 +36,61 @@
     <button id="btn-dark" class="active" aria-pressed="true" type="button">ダーク / Dark</button>
   </div>
 
+  <!-- OS Section -->
   <section aria-labelledby="cat-os">
     <h2 id="cat-os"></h2>
+    
     <div class="subhead" id="os-ua-ch-label"></div>
     <table id="table-os-ua-ch"></table>
+    
     <div class="subhead" id="os-ua-label"></div>
     <table id="table-os-ua"></table>
   </section>
 
+  <!-- Browser Section -->
   <section aria-labelledby="cat-browser">
     <h2 id="cat-browser"></h2>
+    
     <div class="subhead" id="browser-ua-ch-label"></div>
     <table id="table-browser-ua-ch"></table>
+    
     <div class="subhead" id="browser-ua-label"></div>
     <table id="table-browser-ua"></table>
   </section>
 
+  <!-- Screen Section -->
   <section aria-labelledby="cat-screen">
     <h2 id="cat-screen"></h2>
     <table id="table-screen"></table>
   </section>
 
+  <!-- CPU Section -->
   <section aria-labelledby="cat-cpu">
     <h2 id="cat-cpu"></h2>
     <table id="table-cpu"></table>
   </section>
 
+  <!-- Network Section -->
   <section aria-labelledby="cat-network">
     <h2 id="cat-network"></h2>
     <table id="table-network"></table>
   </section>
 
+  <!-- Other Section -->
   <section aria-labelledby="cat-other">
     <h2 id="cat-other"></h2>
     <table id="table-other"></table>
   </section>
 
+  <!-- Footer -->
   <footer>
     <div id="footer-copyright"></div>
     <div id="footer-warning"></div>
     <div id="footer-library"></div>
   </footer>
 
+  <!-- JS -->
   <script src="main.js"></script>
+
 </body>
 </html>
