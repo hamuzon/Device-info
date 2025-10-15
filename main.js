@@ -1,4 +1,5 @@
 (function() {
+
   const dict = {
     ja: {
       title: "デバイス情報",
@@ -34,12 +35,18 @@
       online_no: `<span class="selectable">オフライン</span>`,
       light: "ライト",
       dark: "ダーク",
-      footer: { copyright: "© 2025 device-info", warning: "表示される情報は一部、正確でない可能性があります。",
-        library: `使用ライブラリ: 
-        <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
-        <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
-        <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
-        <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>` } },
+      footer: {
+        copyright: "© 2025 device-info",
+        warning: "表示される情報は一部、正確でない可能性があります。",
+        library: `
+          使用ライブラリ: 
+          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
+          <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
+          <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
+          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>
+        `
+      }
+    },
     en: {
       title: "Device Information",
       os_ch: "OS Information (UA-CH)",
@@ -74,12 +81,18 @@
       online_no: `<span class="selectable">Offline</span>`,
       light: "Light",
       dark: "Dark",
-      footer: { copyright: "© 2025 device-info", warning: "Displayed information may not be accurate.",
-        library: `Libraries used: 
-        <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
-        <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
-        <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
-        <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>` } }
+      footer: {
+        copyright: "© 2025 device-info",
+        warning: "Displayed information may not be accurate.",
+        library: `
+          Libraries used: 
+          <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
+          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>
+        `
+      }
+    }
   };
 
   const titleEl = document.getElementById('title');
@@ -87,10 +100,10 @@
   const btnEn = document.getElementById('btn-en');
   const btnLight = document.getElementById('btn-light');
   const btnDark = document.getElementById('btn-dark');
-  const favicon = document.getElementById('favicon');
   const footerCopyright = document.getElementById('footer-copyright');
   const footerWarning = document.getElementById('footer-warning');
   const footerLibrary = document.getElementById('footer-library');
+
   const tables = {
     os_ua_ch: document.getElementById('table-os-ua-ch'),
     os_ua: document.getElementById('table-os-ua'),
@@ -101,10 +114,12 @@
     network: document.getElementById('table-network'),
     other: document.getElementById('table-other')
   };
+
   const osUaChLabel = document.getElementById('os-ua-ch-label');
   const osUaLabel = document.getElementById('os-ua-label');
   const browserUaChLabel = document.getElementById('browser-ua-ch-label');
   const browserUaLabel = document.getElementById('browser-ua-label');
+
   const sectionTitles = {
     os: document.getElementById('cat-os'),
     browser: document.getElementById('cat-browser'),
@@ -251,4 +266,27 @@
   setMode(darkMode?'dark':'light');
   setLang(currentLang);
   setInterval(updateCurrentTime,1000);
+
+  (function() {
+    const siteConfig = {
+      "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
+      "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+      "device-info.hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
+      "device-info.hamuzon-jp.f5.si": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon-jp.f5.si" },
+      "hamuzon-jp.f5.si": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon-jp.f5.si" },
+      "default": { baseYear: 2025, user: "device-info", link: "" },
+    };
+    const host = window.location.hostname;
+    const config = siteConfig[host] || siteConfig["default"];
+    const currentYear = new Date().getFullYear();
+    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+    if (footerCopyright) {
+      if (config.link) {
+        footerCopyright.innerHTML = `© ${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`;
+      } else {
+        footerCopyright.textContent = `© ${yearText} device-info`;
+      }
+    }
+  })();
+
 })();
