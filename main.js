@@ -1,4 +1,4 @@
-(function () {
+(function() {
   const dict = {
     ja: {
       title: "デバイス情報",
@@ -6,14 +6,7 @@
       os_ua: "OS情報（User-Agent）",
       browser_ch: "ブラウザ情報（UA-CH）",
       browser_ua: "ブラウザ情報（User-Agent）",
-      category: {
-        os: "OS情報",
-        browser: "ブラウザ情報",
-        screen: "画面情報",
-        cpu: "CPU・メモリ",
-        network: "ネットワーク情報",
-        other: "その他情報"
-      },
+      category: { os: "OS情報", browser: "ブラウザ情報", screen: "画面情報", cpu: "CPU・メモリ", network: "ネットワーク情報", other: "その他情報" },
       os: `<span class="selectable">OS名</span>`,
       version: `<span class="selectable">バージョン</span>`,
       device: `<span class="selectable">端末名</span>`,
@@ -57,14 +50,7 @@
       os_ua: "OS Information (User-Agent)",
       browser_ch: "Browser Information (UA-CH)",
       browser_ua: "Browser Information (User-Agent)",
-      category: {
-        os: "OS Information",
-        browser: "Browser Information",
-        screen: "Screen Information",
-        cpu: "CPU & Memory",
-        network: "Network Information",
-        other: "Other Information"
-      },
+      category: { os: "OS Information", browser: "Browser Information", screen: "Screen Information", cpu: "CPU & Memory", network: "Network Information", other: "Other Information" },
       os: `<span class="selectable">Operating System</span>`,
       version: `<span class="selectable">Version</span>`,
       device: `<span class="selectable">Device Name</span>`,
@@ -104,6 +90,7 @@
     }
   };
 
+  // === DOM Elements ===
   const titleEl = document.getElementById('title');
   const btnJa = document.getElementById('btn-ja');
   const btnEn = document.getElementById('btn-en');
@@ -139,6 +126,31 @@
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+  // === Utility functions ===
+  function createRow(label, value){
+    const row = document.createElement('tr');
+    row.innerHTML = `<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
+    return row;
+  }
+
+  async function fetchIPData() {
+    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const currentIP = (ipv6 && ipv6!==dict[currentLang].unknown)?ipv6:ipv4;
+    return { ipv4, ipv6, currentIP };
+  }
+
+  function getCpuNameByUA() {
+    const ua = navigator.userAgent;
+    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?`ARM (推定)`:`ARM (Estimated)`;
+    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?`x64 (推定)`:`x64 (Estimated)`;
+    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?`x86 (推定)`:`x86 (Estimated)`;
+    if (/PPC|PowerPC/i.test(ua)) return currentLang==="ja"?`PowerPC (推定)`:`PowerPC (Estimated)`;
+    if (/mips/i.test(ua)) return currentLang==="ja"?`MIPS (推定)`:`MIPS (Estimated)`;
+    return dict[currentLang].unknown;
+  }
+
+  // === OS/Browser/Device Detection ===
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
@@ -156,119 +168,77 @@
     return result;
   }
 
-  function getDeviceNameDetailed() {
-    const ua = navigator.userAgent;
-    if (/iPhone/.test(ua)) {
-      if (/iPhone OS 17/.test(ua)) return currentLang==="ja"?"iPhone 15系":"iPhone 15 series";
-      if (/iPhone OS 16/.test(ua)) return currentLang==="ja"?"iPhone 14系":"iPhone 14 series";
-      if (/iPhone OS 15/.test(ua)) return currentLang==="ja"?"iPhone 13系":"iPhone 13 series";
-      return currentLang==="ja"?"iPhone":"iPhone";
-    }
-    if (/iPad/.test(ua)) {
-      if (/CPU OS 17/.test(ua)) return currentLang==="ja"?"iPad 第10世代":"iPad 10th gen";
-      if (/CPU OS 16/.test(ua)) return currentLang==="ja"?"iPad 第9世代":"iPad 9th gen";
-      return currentLang==="ja"?"iPad":"iPad";
-    }
-    if (/iPod/.test(ua)) return currentLang==="ja"?"iPod":"iPod";
-    if (/Pixel/.test(ua)) return currentLang==="ja"?"Google Pixel":"Google Pixel";
-    if (/SM-[A-Z0-9]+/.test(ua)) return currentLang==="ja"?"Samsung Galaxy":"Samsung Galaxy";
-    if (/HUAWEI/.test(ua)) return currentLang==="ja"?"Huawei":"Huawei";
-    if (/Mi [A-Z0-9]+/.test(ua)) return currentLang==="ja"?"Xiaomi":"Xiaomi";
-    if (/OPPO/.test(ua)) return currentLang==="ja"?"OPPO":"OPPO";
-    if (/VIVO/.test(ua)) return currentLang==="ja"?"Vivo":"Vivo";
-    if (/LG-/.test(ua)) return currentLang==="ja"?"LG":"LG";
-    if (/Kindle|Silk/.test(ua)) return currentLang==="ja"?"Kindle":"Kindle";
-    if (/CrOS/.test(ua)) return currentLang==="ja"?"Chromebook":"Chromebook";
-    if (/Windows NT/.test(ua)) return currentLang==="ja"?"PC (Windows)":"PC (Windows)";
-    if (/Mac OS X/.test(ua)) return currentLang==="ja"?"Mac":"Mac";
-    if (/Linux/.test(navigator.platform)) return currentLang==="ja"?"Linux端末":"Linux device";
-    if (/Nintendo|Switch|WiiU|PlayStation/i.test(ua)) {
-      const m = ua.match(/(Nintendo|Switch|WiiU|PlayStation)/i);
-      return m ? m[1] : currentLang==="ja"?"ゲーム機":"Game Console";
-    }
-    return currentLang==="ja"?"不明":"Unknown";
-  }
-
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
-    let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
-    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; }
-    else if (/iPhone|iPad|iPod/.test(ua)) { version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; os="iOS"; }
-    else if (/Windows NT/.test(ua)) { const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; os="Windows"; version=map[ver]||ver||version; }
-    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; }
-    else if (/Linux/.test(navigator.platform)) { os="Linux"; }
-    let browser=dict[currentLang].unknown,bver=dict[currentLang].unknown;
+    let os=dict[currentLang].unknown, version=dict[currentLang].unknown, device=dict[currentLang].unknown;
+    let browser=dict[currentLang].unknown, bver=dict[currentLang].unknown;
+
+    // === OS/Device ===
+    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; device=(ua.match(/;\s?([^;\/]+)\s+Build/i)||[])[1]||device; }
+    else if (/iPhone|iPad|iPod/.test(ua)) { os=/iPhone/.test(ua)?"iOS":"iPadOS"; device=/iPhone/.test(ua)?"iPhone":"iPad"; version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; }
+    else if (/Windows NT/.test(ua)) { os="Windows"; const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; version=map[ver]||ver||version; device="PC"; }
+    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device="Mac"; }
+    else if (/Linux/.test(navigator.platform)) { os="Linux"; device=currentLang==="ja"?"Linux端末":"Linux device"; }
+
+    // === Browser ===
     if (/Edg\//.test(ua)) browser="Microsoft Edge", bver=(ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;
     else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver;
     else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver;
     else if (/Firefox\//.test(ua)) browser="Firefox", bver=(ua.match(/Firefox\/([\d\.]+)/)||[])[1]||bver;
     else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;
-    device = getDeviceNameDetailed();
+
     return { os, version, device, browser, browserVersion:bver };
   }
 
-  function getCpuNameByUA() {
-    const ua = navigator.userAgent;
-    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?`ARM (推定)`:`ARM (Estimated)`;
-    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?`x64 (推定)`:`x64 (Estimated)`;
-    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?`x86 (推定)`:`x86 (Estimated)`;
-    if (/PPC|PowerPC/i.test(ua)) return currentLang==="ja"?`PowerPC (推定)`:`PowerPC (Estimated)`;
-    if (/mips/i.test(ua)) return currentLang==="ja"?`MIPS (推定)`:`MIPS (Estimated)`;
-    return dict[currentLang].unknown;
-  }
-
-  function createRow(label,value){ 
-    const row=document.createElement('tr'); 
-    row.innerHTML=`<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`; 
-    return row; 
-  }
-
-  async function fetchIPData() {
-    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const ipv6 = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const currentIP = (ipv6 && ipv6!==dict[currentLang].unknown)?ipv6:ipv4;
-    return { ipv4, ipv6, currentIP };
-  }
-
+  // === Info Update ===
   async function updateInfo() {
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
+
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
 
+    // OS UA-CH
     osUaChLabel.innerHTML = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
-
+    // OS UA
     osUaLabel.innerHTML = lang.os_ua;
     [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
 
+    // Browser UA-CH
     browserUaChLabel.innerHTML = lang.browser_ch;
     [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
-
+    // Browser UA
     browserUaLabel.innerHTML = lang.browser_ua;
     [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
 
+    // Screen
     [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
 
+    // CPU & Memory
     const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
     const memory = typeof navigator.deviceMemory==="number"?`${Math.min(navigator.deviceMemory,8)} GB`:lang.unknown;
     [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
+    // Network
     const {ipv4,ipv6,currentIP} = await fetchIPData();
     const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
     [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
 
+    // Other
     [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
     footerWarning.innerHTML = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
 
+  // === Update Time ===
   function updateCurrentTime() {
     const nowStr = new Date().toLocaleString();
     const rows = tables.other.querySelectorAll('tr');
     for(const row of rows){ if(row.firstElementChild?.textContent===dict[currentLang].now.replace(/<[^>]+>/g,'')){ row.lastElementChild.textContent=nowStr; break; } }
   }
 
+  // === Language / Mode ===
   function setLang(lang){
     currentLang=lang;
     localStorage.setItem("lang",lang);
@@ -304,6 +274,7 @@
   setLang(currentLang);
   setInterval(updateCurrentTime,1000);
 
+  // === Footer & Site Config ===
   (function() {
     const siteConfig = {
       "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
