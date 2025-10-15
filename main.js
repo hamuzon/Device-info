@@ -126,7 +126,7 @@
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  // === Utility functions ===
+  // === Utility ===
   function createRow(label, value){
     const row = document.createElement('tr');
     row.innerHTML = `<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
@@ -150,7 +150,32 @@
     return dict[currentLang].unknown;
   }
 
-  // === OS/Browser/Device Detection ===
+  // === Detect Device Name with UA mapping ===
+  function detectDeviceName(ua) {
+    ua = ua.toLowerCase();
+    // Smartphones / Tablets
+    if (/pixel/i.test(ua)) return "Pixel";
+    if (/galaxy/i.test(ua)) return "Samsung Galaxy";
+    if (/huawei/i.test(ua)) return "Huawei";
+    if (/xiaomi/i.test(ua)) return "Xiaomi";
+    if (/oppo/i.test(ua)) return "OPPO";
+    if (/vivo/i.test(ua)) return "Vivo";
+    if (/lg/i.test(ua)) return "LG";
+    if (/kindle/i.test(ua)) return "Kindle";
+    if (/nintendo|switch/i.test(ua)) return "Nintendo Switch";
+    if (/playstation/i.test(ua)) return "PlayStation";
+    if (/xbox/i.test(ua)) return "Xbox";
+    if (/chromebook/i.test(ua)) return "Chromebook";
+    if (/iphone/i.test(ua)) return "iPhone";
+    if (/ipad/i.test(ua)) return "iPad";
+    if (/ipod/i.test(ua)) return "iPod";
+    if (/macintosh|mac os x/i.test(ua)) return "Mac";
+    if (/windows/i.test(ua)) return "PC (Windows)";
+    if (/linux/i.test(ua)) return "Linux端末";
+    return dict[currentLang].unknown;
+  }
+
+  // === OS/Browser Detection ===
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
@@ -158,7 +183,7 @@
         const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
         result.os = ch.platform || "";
         result.version = ch.platformVersion || "";
-        result.device = ch.model || "";
+        result.device = ch.model || detectDeviceName(navigator.userAgent);
         if (navigator.userAgentData.brands?.length) {
           const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
           if (b) { result.browser = b.brand; result.browserVersion = b.version; }
@@ -170,17 +195,16 @@
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
-    let os=dict[currentLang].unknown, version=dict[currentLang].unknown, device=dict[currentLang].unknown;
+    let os=dict[currentLang].unknown, version=dict[currentLang].unknown, device=detectDeviceName(ua);
     let browser=dict[currentLang].unknown, bver=dict[currentLang].unknown;
 
-    // === OS/Device ===
-    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; device=(ua.match(/;\s?([^;\/]+)\s+Build/i)||[])[1]||device; }
-    else if (/iPhone|iPad|iPod/.test(ua)) { os=/iPhone/.test(ua)?"iOS":"iPadOS"; device=/iPhone/.test(ua)?"iPhone":"iPad"; version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; }
-    else if (/Windows NT/.test(ua)) { os="Windows"; const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; version=map[ver]||ver||version; device="PC"; }
-    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device="Mac"; }
-    else if (/Linux/.test(navigator.platform)) { os="Linux"; device=currentLang==="ja"?"Linux端末":"Linux device"; }
+    // OS detection
+    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; }
+    else if (/iPhone|iPad|iPod/.test(ua)) { os=/iPhone/.test(ua)?"iOS":"iPadOS"; version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; }
+    else if (/Windows NT/.test(ua)) { os="Windows"; const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; version=map[ver]||ver||version; }
+    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; }
 
-    // === Browser ===
+    // Browser detection
     if (/Edg\//.test(ua)) browser="Microsoft Edge", bver=(ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;
     else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver;
     else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver;
@@ -190,55 +214,45 @@
     return { os, version, device, browser, browserVersion:bver };
   }
 
-  // === Info Update ===
+  // === Update Info ===
   async function updateInfo() {
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
 
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
 
-    // OS UA-CH
     osUaChLabel.innerHTML = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
-    // OS UA
     osUaLabel.innerHTML = lang.os_ua;
     [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
 
-    // Browser UA-CH
     browserUaChLabel.innerHTML = lang.browser_ch;
     [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
-    // Browser UA
     browserUaLabel.innerHTML = lang.browser_ua;
     [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
 
-    // Screen
     [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
 
-    // CPU & Memory
     const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
     const memory = typeof navigator.deviceMemory==="number"?`${Math.min(navigator.deviceMemory,8)} GB`:lang.unknown;
     [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
-    // Network
     const {ipv4,ipv6,currentIP} = await fetchIPData();
     const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
     [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
 
-    // Other
     [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
     footerWarning.innerHTML = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
 
-  // === Update Time ===
   function updateCurrentTime() {
     const nowStr = new Date().toLocaleString();
     const rows = tables.other.querySelectorAll('tr');
     for(const row of rows){ if(row.firstElementChild?.textContent===dict[currentLang].now.replace(/<[^>]+>/g,'')){ row.lastElementChild.textContent=nowStr; break; } }
   }
 
-  // === Language / Mode ===
   function setLang(lang){
     currentLang=lang;
     localStorage.setItem("lang",lang);
@@ -274,7 +288,6 @@
   setLang(currentLang);
   setInterval(updateCurrentTime,1000);
 
-  // === Footer & Site Config ===
   (function() {
     const siteConfig = {
       "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
@@ -296,4 +309,5 @@
       }
     }
   })();
+
 })();
