@@ -25,7 +25,6 @@
       ip: `<span class="selectable">現在使用IP</span>`,
       online: `<span class="selectable">オンライン状態</span>`,
       language: `<span class="selectable">ブラウザ言語</span>`,
-      cookiesEnabled: `<span class="selectable">クッキー有効</span>`,
       fetchedAt: `<span class="selectable">取得時刻</span>`,
       now: `<span class="selectable">現在時刻</span>`,
       timezone: `<span class="selectable">タイムゾーン</span>`,
@@ -69,7 +68,6 @@
       ip: `<span class="selectable">Current IP</span>`,
       online: `<span class="selectable">Online Status</span>`,
       language: `<span class="selectable">Browser Language</span>`,
-      cookiesEnabled: `<span class="selectable">Cookies Enabled</span>`,
       fetchedAt: `<span class="selectable">Fetched At</span>`,
       now: `<span class="selectable">Current Time</span>`,
       timezone: `<span class="selectable">Timezone</span>`,
@@ -212,7 +210,7 @@
     const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
     [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
 
-    [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
+    [[lang.language,navigator.language||lang.unknown],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
     footerWarning.innerHTML = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
