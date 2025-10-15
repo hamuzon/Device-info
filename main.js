@@ -20,6 +20,7 @@
       cpu: `<span class="selectable">CPUコア数</span>`,
       cpuName: `<span class="selectable">CPU名</span>`,
       memory: `<span class="selectable">メモリ：最大 8GBまで</span>`,
+      gpu: `<span class="selectable">GPU名</span>`,
       ipv4: `<span class="selectable">IPv4アドレス</span>`,
       ipv6: `<span class="selectable">IPv6アドレス</span>`,
       ip: `<span class="selectable">現在使用IP</span>`,
@@ -64,6 +65,7 @@
       cpu: `<span class="selectable">CPU Cores</span>`,
       cpuName: `<span class="selectable">CPU Name</span>`,
       memory: `<span class="selectable">Memory: Max 8GB</span>`,
+      gpu: `<span class="selectable">GPU Name</span>`,
       ipv4: `<span class="selectable">IPv4 Address</span>`,
       ipv6: `<span class="selectable">IPv6 Address</span>`,
       ip: `<span class="selectable">Current IP</span>`,
@@ -179,6 +181,16 @@
     return dict[currentLang].unknown;
   }
 
+  function getGPUInfo() {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return dict[currentLang].unknown;
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : dict[currentLang].unknown;
+    } catch { return dict[currentLang].unknown; }
+  }
+
   function createRow(label,value){
     const row=document.createElement('tr');
     row.innerHTML=`<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
@@ -196,31 +208,23 @@
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
-
     osUaChLabel.innerHTML = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
-
     osUaLabel.innerHTML = lang.os_ua;
     [[lang.os,osua.os],[lang.version,osua.version],[lang.device,osua.device]].forEach(([l,v])=>tables.os_ua.appendChild(createRow(l,v)));
-
     browserUaChLabel.innerHTML = lang.browser_ch;
     [[lang.browser,osch.browser||lang.unknown],[lang.browserVersion,osch.browserVersion||lang.unknown]].forEach(([l,v])=>tables.browser_ua_ch.appendChild(createRow(l,v)));
-
     browserUaLabel.innerHTML = lang.browser_ua;
     [[lang.browser,osua.browser],[lang.browserVersion,osua.browserVersion]].forEach(([l,v])=>tables.browser_ua.appendChild(createRow(l,v)));
-
     [[lang.screen,`${screen.width} x ${screen.height}`],[lang.viewport,`${window.innerWidth} x ${window.innerHeight}`],[lang.colorDepth,screen.colorDepth],[lang.pixelDepth,screen.pixelDepth]].forEach(([l,v])=>tables.screen.appendChild(createRow(l,v)));
-
     const cpuCores = typeof navigator.hardwareConcurrency==="number"?navigator.hardwareConcurrency:lang.unknown;
     const memory = typeof navigator.deviceMemory==="number"?`${Math.min(navigator.deviceMemory,8)} GB`:lang.unknown;
-    [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
-
+    const gpu = getGPUInfo();
+    [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory],[lang.gpu,gpu]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
     const {ipv4,ipv6,currentIP} = await fetchIPData();
     const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
     [[lang.ipv4,ipv4],[lang.ipv6,ipv6],[lang.ip,currentIP],[lang.online,onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
-
     [[lang.language,navigator.language||lang.unknown],[lang.cookiesEnabled,navigator.cookieEnabled?lang.online_yes:lang.online_no],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
-
     footerWarning.innerHTML = lang.footer.warning;
     footerLibrary.innerHTML = lang.footer.library;
   }
