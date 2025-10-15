@@ -130,7 +130,8 @@
   };
 
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
-  let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  let darkMode = localStorage.getItem("mode") || 'light';
 
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
@@ -260,8 +261,8 @@
 
   btnJa.addEventListener('click',()=>setLang('ja'));
   btnEn.addEventListener('click',()=>setLang('en'));
-  btnLight.addEventListener('click',()=>setMode(false));
-  btnDark.addEventListener('click',()=>setMode(true));
+  btnLight.addEventListener('click',()=>setMode('light'));
+  btnDark.addEventListener('click',()=>setMode('dark'));
 
   setMode(darkMode);
   setLang(currentLang);
