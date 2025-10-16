@@ -184,7 +184,6 @@
     return row;
   }
 
-  // --- IP取得 ---
   async function fetchIPData() {
     const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
     const ipv6 = await fetch('https://api6.ipify.org/?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
@@ -218,19 +217,12 @@
 
     const {ipv4,ipv6,currentIP} = await fetchIPData();
     const onlineStatus = navigator.onLine?lang.online_yes:lang.online_no;
-
-    // ネットワーク情報テーブル（種別付き）
-    [
-      [lang.ipv4, ipv4, "IPv4"],
-      [lang.ipv6, ipv6, "IPv6"],
-      [lang.ip, currentIP, "現在使用"]
-    ].forEach(([label, ip, type]) => {
+    [[lang.ipv4, ipv4],[lang.ipv6, ipv6],[lang.ip, currentIP]].forEach(([label, ip]) => {
       const row = document.createElement('tr');
-      row.innerHTML = `<th scope="row">${label}</th><td>${ip||lang.unknown}</td><td>${type}</td>`;
+      row.innerHTML = `<th scope="row">${label}</th><td>${ip||lang.unknown}</td><td></td>`;
       tables.network.appendChild(row);
     });
-
-    [[lang.online, onlineStatus]].forEach(([l,v])=>tables.network.appendChild(createRow(l,v)));
+    tables.network.appendChild(createRow(lang.online, onlineStatus));
 
     [[lang.language,navigator.language||lang.unknown],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
 
@@ -279,7 +271,6 @@
   setLang(currentLang);
   setInterval(updateCurrentTime,1000);
 
-  // フッターの年表示
   (function() {
     const siteConfig = {
       "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
