@@ -37,6 +37,26 @@ h1 {
     user-select: none;
 }
 
+header {
+    width: 100%;
+    max-width: 900px;
+    margin: 1rem auto 1.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-weight: 600;
+    border-radius: var(--radius);
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-dark);
+    user-select: none;
+    transition: background var(--transition), color var(--transition);
+}
+
+body.light header {
+    background: rgba(37, 99, 235, 0.15);
+    color: var(--accent-light);
+}
+
 .controls {
     display: flex;
     justify-content: center;
@@ -58,6 +78,7 @@ h1 {
     border-radius: var(--radius);
     transition: var(--transition);
     user-select: none;
+    flex: 0 1 auto;
 }
 
 body.light .controls button {
@@ -132,6 +153,21 @@ body.light th {
     color: var(--accent-light);
 }
 
+tr {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .subhead {
     font-size: 0.95em;
     color: #9ca3af;
@@ -163,21 +199,6 @@ footer a:hover {
     text-decoration: none;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-tr {
-    animation: fadeIn 0.4s ease-in-out;
-}
-
 @media (max-width: 768px) {
     section {
         padding: 0.8rem;
@@ -195,6 +216,16 @@ tr {
     }
 }
 
+@media (max-width: 600px) {
+    .controls {
+        flex-wrap: wrap;
+    }
+    .controls button {
+        flex: 1 1 45%;
+        text-align: center;
+    }
+}
+
 @media (max-width: 480px) {
     h1 {
         font-size: 1.6rem;
@@ -209,5 +240,8 @@ tr {
     }
     section {
         padding: 0.6rem;
+    }
+    header {
+        font-size: 0.8rem;
     }
 }
