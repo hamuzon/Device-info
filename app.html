@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>app 風</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --outer-bg: #000;
+    --frame-color: #334155;
+
+    --l-sys-bg: #FDFCF4;
+    --l-sys-on-bg: #1B1C17;
+    --l-sys-surface: #E3E4D3;
+    --l-sys-primary: #4C662B;
+    --l-sys-on-primary: #FFF;
+    --l-sys-sec-cont: #D7E8B7;
+    --l-sys-on-sec-cont: #121F00;
+}
+
+.dark {
+    --sys-bg: #1B1C17;
+    --sys-on-bg: #E3E4D3;
+    --sys-surface: #2F3126;
+    --sys-primary: #B1D18A;
+    --sys-sec-cont: #3E4A2B;
+    --sys-on-sec-cont: #D7E8B7;
+}
+
+.light {
+    --sys-bg: var(--l-sys-bg);
+    --sys-on-bg: var(--l-sys-on-bg);
+    --sys-surface: var(--l-sys-surface);
+    --sys-primary: var(--l-sys-primary);
+    --sys-sec-cont: var(--l-sys-sec-cont);
+    --sys-on-sec-cont: var(--l-sys-on-sec-cont);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Kiwi Maru', sans-serif;
+    background: var(--outer-bg);
+}
+
+.phone-case {
+    width: 92%;
+    max-width: 380px;
+    height: 82vh;
+    background: #222;
+    border: 12px solid var(--frame-color);
+    border-radius: 54px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+    overflow: hidden;
+}
+
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--sys-bg);
+    color: var(--sys-on-bg);
+    padding: 0 16px;
+    transition: 0.4s;
+}
+
+.status-bar {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.display-container {
+    flex: 1;
+    margin: 12px 0;
+    background: var(--sys-surface);
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+}
+
+.display-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.nav-bar {
+    height: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-line {
+    width: 72px;
+    height: 5px;
+    background: var(--sys-on-bg);
+    opacity: 0.25;
+    border-radius: 10px;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="phone-case">
+    <div class="container">
+
+        <div class="status-bar">
+            <div id="st-time">00:00</div>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <span id="bat-lv">--%</span>
+                <span id="bat-ico" class="material-symbols-outlined" style="font-size:20px;">battery_unknown</span>
+            </div>
+        </div>
+
+        <div class="display-container">
+            <iframe id="contentFrame" src="https://hamusata8683.static.jp/"></iframe>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-line" onclick="location.reload();"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+function getInitialTheme() {
+    var saved = localStorage.getItem('p10-mode');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+var theme = getInitialTheme();
+document.documentElement.className = theme;
+
+
+function applyThemeToIframe(t) {
+    var iframe = document.getElementById('contentFrame');
+    if (iframe && iframe.contentDocument) {
+        iframe.contentDocument.body.className = t;
+    }
+}
+
+
+function tick() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    if (h < 10) h = '0'+h;
+    if (m < 10) m = '0'+m;
+    document.getElementById('st-time').innerHTML = h + ':' + m;
+}
+
+
+function initBattery() {
+    if (navigator.getBattery) {
+        navigator.getBattery().then(function(battery){
+            function update() {
+                var lv = Math.round(battery.level*100);
+                document.getElementById('bat-lv').innerHTML = lv + '%';
+                document.getElementById('bat-ico').innerHTML =
+                    battery.charging ? 'battery_charging_full' : 'battery_full';
+            }
+            update();
+            battery.onlevelchange = update;
+            battery.onchargingchange = update;
+        });
+    }
+}
+
+
+function toggleTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.className = theme;
+    applyThemeToIframe(theme);
+    localStorage.setItem('p10-mode', theme);
+}
+
+
+window.onload = function () {
+    tick();
+    setInterval(tick, 1000);
+    initBattery();
+    applyThemeToIframe(theme);
+
+    var iframe = document.getElementById('contentFrame');
+    if (iframe && iframe.contentDocument) {
+        iframe.onload = function() {
+            iframe.contentDocument.body.className = theme;
+            iframe.contentDocument.addEventListener('scroll', function(){
+                var scrollTop = iframe.contentDocument.documentElement.scrollTop || iframe.contentDocument.body.scrollTop;
+                if (scrollTop > 50) {
+                    document.documentElement.className = 'dark';
+                    applyThemeToIframe('dark');
+                } else {
+                    document.documentElement.className = 'light';
+                    applyThemeToIframe('light');
+                }
+            });
+        };
+    }
+};
+</script>
+
+</body>
+</html>
