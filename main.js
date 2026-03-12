@@ -50,6 +50,11 @@
       online_no: `<span class="selectable">オフライン</span>`,
       enabled: `<span class="selectable">有効</span>`,
       disabled: `<span class="selectable">無効</span>`,
+      networkBasic: "標準表示",
+      networkExtended: "詳細表示",
+      networkModeLabel: `<span class="selectable">ネットワーク表示モード</span>`,
+      networkModeBasic: `<span class="selectable">標準</span>`,
+      networkModeExtended: `<span class="selectable">詳細</span>`,
       light: "ライト",
       dark: "ダーク",
       footer: {
@@ -57,7 +62,7 @@
         warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
-          <a href="https://ipwhois.io/" target="_blank" rel="noopener noreferrer">ipwhois API</a>,
+          <a href="https://ip-api.com/" target="_blank" rel="noopener noreferrer">ip-api</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API/Network_Information_API" target="_blank" rel="noopener noreferrer">Network Information API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
@@ -114,6 +119,11 @@
       online_no: `<span class="selectable">Offline</span>`,
       enabled: `<span class="selectable">Enabled</span>`,
       disabled: `<span class="selectable">Disabled</span>`,
+      networkBasic: "Basic",
+      networkExtended: "Extended",
+      networkModeLabel: `<span class="selectable">Network view mode</span>`,
+      networkModeBasic: `<span class="selectable">Basic</span>`,
+      networkModeExtended: `<span class="selectable">Extended</span>`,
       light: "Light",
       dark: "Dark",
       footer: {
@@ -121,7 +131,7 @@
         warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
-          <a href="https://ipwhois.io/" target="_blank" rel="noopener noreferrer">ipwhois API</a>,
+          <a href="https://ip-api.com/" target="_blank" rel="noopener noreferrer">ip-api</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API/Network_Information_API" target="_blank" rel="noopener noreferrer">Network Information API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
@@ -135,6 +145,8 @@
   const btnEn = document.getElementById('btn-en');
   const btnLight = document.getElementById('btn-light');
   const btnDark = document.getElementById('btn-dark');
+  const btnNetBasic = document.getElementById('btn-net-basic');
+  const btnNetExtended = document.getElementById('btn-net-extended');
   const favicon = document.getElementById('favicon');
   const footerCopyright = document.getElementById('footer-copyright');
   const footerWarning = document.getElementById('footer-warning');
@@ -166,6 +178,7 @@
 
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  let networkViewMode = localStorage.getItem("network_view") || "basic";
 
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
@@ -238,38 +251,35 @@
       return { isp: dict[currentLang].unknown, asn: dict[currentLang].unknown, mobile: false, proxy: false, hosting: false };
     }
 
-    try {
-      const data = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`).then(res => res.json());
-      const connection = data.connection || {};
-      return {
-        isp: connection.isp || dict[currentLang].unknown,
-        asn: connection.org || connection.asn || dict[currentLang].unknown,
-        mobile: Boolean(connection.mobile),
-        proxy: Boolean(connection.proxy),
-        hosting: Boolean(connection.hosting)
-      };
-    } catch (e) {
+    const canUseIpApi = window.location.protocol === 'http:' || ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (!canUseIpApi) {
       return { isp: dict[currentLang].unknown, asn: dict[currentLang].unknown, mobile: false, proxy: false, hosting: false };
     }
+
+    try {
+      const data = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,isp,org,as,mobile,proxy,hosting`, { cache: 'no-store' }).then(res => res.json());
+      if (data.status === 'success') {
+        return {
+          isp: data.isp || data.org || dict[currentLang].unknown,
+          asn: data.as || data.org || dict[currentLang].unknown,
+          mobile: Boolean(data.mobile),
+          proxy: Boolean(data.proxy),
+          hosting: Boolean(data.hosting)
+        };
+      }
+    } catch (e) {}
+
+    return { isp: dict[currentLang].unknown, asn: dict[currentLang].unknown, mobile: false, proxy: false, hosting: false };
   }
 
-  async function pingServers(urls = [
-    "https://www.google.com/favicon.ico",
-    "https://www.cloudflare.com/favicon.ico",
-    "https://www.yahoo.co.jp/favicon.ico"
-  ]) {
-    const durations = [];
-    for (const url of urls) {
-      const start = performance.now();
-      try {
-        await fetch(`${url}?t=${Date.now()}`, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
-        durations.push(performance.now() - start);
-      } catch (e) {
-        durations.push(-1);
-      }
+  async function pingServers(url = "https://www.cloudflare.com/cdn-cgi/trace") {
+    const start = performance.now();
+    try {
+      await fetch(`${url}?t=${Date.now()}`, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
+      return Math.round(performance.now() - start);
+    } catch (e) {
+      return null;
     }
-    const valid = durations.filter(t => t >= 0);
-    return valid.length ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length) : null;
   }
 
   function estimateConnectionType({ isp, asn, mobile, proxy, hosting }, isMobileDevice) {
@@ -333,7 +343,12 @@
     const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
     const estimatedType = estimateConnectionType(connectionMeta, isMobileDevice);
 
-    [[lang.connectionType, estimatedType],[lang.networkDownlink, downlink],[lang.networkRtt, rtt],[lang.networkSaveData, saveData],[lang.isp, connectionMeta.isp],[lang.asn, connectionMeta.asn]].forEach(([label, value]) => { tables.network.appendChild(createRow(label, value)); });
+    tables.network.appendChild(createRow(lang.networkModeLabel, networkViewMode === 'extended' ? lang.networkModeExtended : lang.networkModeBasic));
+
+    if (networkViewMode === 'extended') {
+      [[lang.connectionType, estimatedType],[lang.networkDownlink, downlink],[lang.networkRtt, rtt],[lang.networkSaveData, saveData],[lang.isp, connectionMeta.isp],[lang.asn, connectionMeta.asn]].forEach(([label, value]) => { tables.network.appendChild(createRow(label, value)); });
+    }
+
     tables.network.appendChild(createRow(lang.online, navigator.onLine?lang.online_yes:lang.online_no));
 
     [[lang.language,navigator.language||lang.unknown],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
@@ -361,7 +376,19 @@
     btnEn.setAttribute('aria-pressed',lang==='en');
     btnLight.textContent=dict[lang].light+" / Light";
     btnDark.textContent=dict[lang].dark+" / Dark";
+    btnNetBasic.textContent=dict[lang].networkBasic+" / Basic";
+    btnNetExtended.textContent=dict[lang].networkExtended+" / Extended";
     document.body.setAttribute("lang",lang);
+    updateInfo();
+  }
+
+  function setNetworkViewMode(mode){
+    networkViewMode = mode === 'extended' ? 'extended' : 'basic';
+    localStorage.setItem('network_view', networkViewMode);
+    btnNetBasic.classList.toggle('active', networkViewMode==='basic');
+    btnNetExtended.classList.toggle('active', networkViewMode==='extended');
+    btnNetBasic.setAttribute('aria-pressed', networkViewMode==='basic');
+    btnNetExtended.setAttribute('aria-pressed', networkViewMode==='extended');
     updateInfo();
   }
 
@@ -380,8 +407,11 @@
   btnEn.addEventListener('click',()=>{ setLang('en'); });
   btnLight.addEventListener('click',()=>setMode(false));
   btnDark.addEventListener('click',()=>setMode(true));
+  btnNetBasic.addEventListener('click',()=>setNetworkViewMode('basic'));
+  btnNetExtended.addEventListener('click',()=>setNetworkViewMode('extended'));
 
   setMode(darkMode);
+  setNetworkViewMode(networkViewMode);
   setLang(currentLang);
   setInterval(updateCurrentTime,1000);
 
