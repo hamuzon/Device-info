@@ -32,6 +32,12 @@
       ipv4: `<span class="selectable">IPv4アドレス</span>`,
       ipv6: `<span class="selectable">IPv6アドレス</span>`,
       ip: `<span class="selectable">現在使用IP</span>`,
+      connectionType: `<span class="selectable">回線タイプ（推定）</span>`,
+      networkDownlink: `<span class="selectable">推定速度（downlink）</span>`,
+      networkRtt: `<span class="selectable">RTT（API/Ping）</span>`,
+      networkSaveData: `<span class="selectable">データセーバー</span>`,
+      isp: `<span class="selectable">ISP</span>`,
+      asn: `<span class="selectable">AS情報</span>`,
       online: `<span class="selectable">オンライン状態</span>`,
       language: `<span class="selectable">ブラウザ言語</span>`,
       fetchedAt: `<span class="selectable">取得時刻</span>`,
@@ -42,6 +48,8 @@
       unknown: `<span class="selectable">不明</span>`,
       online_yes: `<span class="selectable">オンライン</span>`,
       online_no: `<span class="selectable">オフライン</span>`,
+      enabled: `<span class="selectable">有効</span>`,
+      disabled: `<span class="selectable">無効</span>`,
       light: "ライト",
       dark: "ダーク",
       footer: {
@@ -49,6 +57,8 @@
         warning: "表示される情報は一部、正確でない可能性があります。",
         library: `使用ライブラリ: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
+          <a href="https://ipwhois.io/" target="_blank" rel="noopener noreferrer">ipwhois API</a>,
+          <a href="https://developer.mozilla.org/ja/docs/Web/API/Network_Information_API" target="_blank" rel="noopener noreferrer">Network Information API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
@@ -86,6 +96,12 @@
       ipv4: `<span class="selectable">IPv4 Address</span>`,
       ipv6: `<span class="selectable">IPv6 Address</span>`,
       ip: `<span class="selectable">Current IP</span>`,
+      connectionType: `<span class="selectable">Connection Type (estimated)</span>`,
+      networkDownlink: `<span class="selectable">Estimated Speed (downlink)</span>`,
+      networkRtt: `<span class="selectable">RTT (API/Ping)</span>`,
+      networkSaveData: `<span class="selectable">Data Saver</span>`,
+      isp: `<span class="selectable">ISP</span>`,
+      asn: `<span class="selectable">AS Info</span>`,
       online: `<span class="selectable">Online Status</span>`,
       language: `<span class="selectable">Browser Language</span>`,
       fetchedAt: `<span class="selectable">Fetched At</span>`,
@@ -96,6 +112,8 @@
       unknown: `<span class="selectable">Unknown</span>`,
       online_yes: `<span class="selectable">Online</span>`,
       online_no: `<span class="selectable">Offline</span>`,
+      enabled: `<span class="selectable">Enabled</span>`,
+      disabled: `<span class="selectable">Disabled</span>`,
       light: "Light",
       dark: "Dark",
       footer: {
@@ -103,6 +121,8 @@
         warning: "Displayed information may not be accurate.",
         library: `Libraries used: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
+          <a href="https://ipwhois.io/" target="_blank" rel="noopener noreferrer">ipwhois API</a>,
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API/Network_Information_API" target="_blank" rel="noopener noreferrer">Network Information API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
@@ -213,6 +233,58 @@
     return { ipv4, ipv6, currentIP };
   }
 
+  async function fetchConnectionMeta(ip) {
+    if (!ip || ip === dict[currentLang].unknown) {
+      return { isp: dict[currentLang].unknown, asn: dict[currentLang].unknown, mobile: false, proxy: false, hosting: false };
+    }
+
+    try {
+      const data = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`).then(res => res.json());
+      const connection = data.connection || {};
+      return {
+        isp: connection.isp || dict[currentLang].unknown,
+        asn: connection.org || connection.asn || dict[currentLang].unknown,
+        mobile: Boolean(connection.mobile),
+        proxy: Boolean(connection.proxy),
+        hosting: Boolean(connection.hosting)
+      };
+    } catch (e) {
+      return { isp: dict[currentLang].unknown, asn: dict[currentLang].unknown, mobile: false, proxy: false, hosting: false };
+    }
+  }
+
+  async function pingServers(urls = [
+    "https://www.google.com/favicon.ico",
+    "https://www.cloudflare.com/favicon.ico",
+    "https://www.yahoo.co.jp/favicon.ico"
+  ]) {
+    const durations = [];
+    for (const url of urls) {
+      const start = performance.now();
+      try {
+        await fetch(`${url}?t=${Date.now()}`, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+        durations.push(performance.now() - start);
+      } catch (e) {
+        durations.push(-1);
+      }
+    }
+    const valid = durations.filter(t => t >= 0);
+    return valid.length ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length) : null;
+  }
+
+  function estimateConnectionType({ isp, asn, mobile, proxy, hosting }, isMobileDevice) {
+    const text = `${isp || ''} ${asn || ''}`.toLowerCase();
+    if (proxy) return currentLang === 'ja' ? 'VPN / プロキシ経由' : 'VPN / Proxy';
+    if (hosting) return currentLang === 'ja' ? 'データセンター / ホスティング系' : 'Datacenter / Hosting';
+    if (mobile || isMobileDevice) {
+      if (text.includes('docomo')) return currentLang === 'ja' ? 'モバイルSIM（ドコモ系）' : 'Mobile SIM (docomo)';
+      if (text.includes('kddi') || text.includes('au')) return currentLang === 'ja' ? 'モバイルSIM（au系）' : 'Mobile SIM (au)';
+      if (text.includes('softbank')) return currentLang === 'ja' ? 'モバイルSIM（SoftBank系）' : 'Mobile SIM (SoftBank)';
+      return currentLang === 'ja' ? 'モバイルSIM / テザリング（推定）' : 'Mobile SIM / Tethering (estimated)';
+    }
+    return currentLang === 'ja' ? '固定回線（推定）' : 'Fixed-line (estimated)';
+  }
+
   async function updateBattery() {
     if(!navigator.getBattery) return { level: dict[currentLang].unknown, charging: dict[currentLang].unknown };
     try {
@@ -228,6 +300,7 @@
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
     const ipData = await fetchIPData();
+    const connectionMeta = await fetchConnectionMeta(ipData.currentIP);
     const batteryData = await updateBattery();
 
     osUaChLabel.innerHTML = lang.os_ch;
@@ -250,6 +323,17 @@
     [[lang.cpu,cpuCores],[lang.cpuName,getCpuNameByUA()],[lang.memory,memory],[lang.gpu,gpuName]].forEach(([l,v])=>tables.cpu.appendChild(createRow(l,v)));
 
     [[lang.ipv4, ipData.ipv4],[lang.ipv6, ipData.ipv6],[lang.ip, ipData.currentIP]].forEach(([label, ip]) => { tables.network.appendChild(createRow(label, ip)); });
+
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const downlink = typeof connection?.downlink === 'number' ? `${connection.downlink} Mbps` : lang.unknown;
+    let rtt = typeof connection?.rtt === 'number' ? `${connection.rtt} ms` : lang.unknown;
+    const pingRtt = await pingServers();
+    if (pingRtt !== null) rtt = `${pingRtt} ms`;
+    const saveData = connection?.saveData ? lang.enabled : lang.disabled;
+    const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
+    const estimatedType = estimateConnectionType(connectionMeta, isMobileDevice);
+
+    [[lang.connectionType, estimatedType],[lang.networkDownlink, downlink],[lang.networkRtt, rtt],[lang.networkSaveData, saveData],[lang.isp, connectionMeta.isp],[lang.asn, connectionMeta.asn]].forEach(([label, value]) => { tables.network.appendChild(createRow(label, value)); });
     tables.network.appendChild(createRow(lang.online, navigator.onLine?lang.online_yes:lang.online_no));
 
     [[lang.language,navigator.language||lang.unknown],[lang.fetchedAt,new Date().toLocaleString()],[lang.now,''],[lang.timezone,Intl.DateTimeFormat().resolvedOptions().timeZone||lang.unknown]].forEach(([l,v])=>tables.other.appendChild(createRow(l,v)));
