@@ -151,6 +151,36 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
   let updateInfoRequestId = 0;
+  let loadingAnimationTimer = null;
+
+  function stopLoadingAnimation() {
+    if (!loadingAnimationTimer) return;
+    clearInterval(loadingAnimationTimer);
+    loadingAnimationTimer = null;
+  }
+
+  function setLoadingRows(baseText) {
+    Object.values(tables).forEach((tbl) => {
+      tbl.innerHTML = '';
+      const row = document.createElement("tr");
+      row.className = "loading-row";
+      row.innerHTML = `<th scope="row">${baseText}</th><td></td>`;
+      tbl.appendChild(row);
+    });
+  }
+
+  function startLoadingAnimation(baseText) {
+    stopLoadingAnimation();
+    let frame = 0;
+    const dots = ['', '.', '..', '...'];
+    loadingAnimationTimer = setInterval(() => {
+      frame = (frame + 1) % dots.length;
+      Object.values(tables).forEach((tbl) => {
+        const label = tbl.querySelector('.loading-row th');
+        if (label) label.textContent = `${baseText}${dots[frame]}`;
+      });
+    }, 400);
+  }
 
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
@@ -284,14 +314,18 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
   async function updateInfo() {
     const requestId = ++updateInfoRequestId;
     const lang = dict[currentLang];
-    Object.values(tables).forEach((tbl) => {
-      tbl.innerHTML = '';
-    });
+    const loadingLabel = 'Loading';
+    setLoadingRows(loadingLabel);
+    startLoadingAnimation(loadingLabel);
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
     const ipData = await fetchIPData();
     const batteryData = await updateBattery();
 
     if (requestId !== updateInfoRequestId) return;
+    stopLoadingAnimation();
+    Object.values(tables).forEach((tbl) => {
+      tbl.innerHTML = '';
+    });
 
     osUaChLabel.innerHTML = lang.os_ch;
     [
