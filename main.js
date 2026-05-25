@@ -1,3 +1,5 @@
+import { detect } from "https://esm.sh/detect-browser@5.3.0";
+
 (function() {
   const dict = {
     ja: {
@@ -51,7 +53,8 @@
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
-          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
+          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>,
+          <a href="https://www.npmjs.com/package/detect-browser" target="_blank" rel="noopener noreferrer">detect-browser</a>`
       }
     },
     en: {
@@ -105,7 +108,8 @@
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
-          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>`
+          <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>,
+          <a href="https://www.npmjs.com/package/detect-browser" target="_blank" rel="noopener noreferrer">detect-browser</a>`
       }
     }
   };
@@ -166,19 +170,21 @@
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
-    let os = dict[currentLang].unknown, version = dict[currentLang].unknown, device = dict[currentLang].unknown;
-    if (/Android/.test(ua)) { os="Android"; version=(ua.match(/Android\s+([\d.]+)/)||[])[1]||version; device=(ua.match(/;\s?([^;\/]+)\s+Build/i)||[])[1]||device; }
-    else if (/iPhone|iPad|iPod/.test(ua)) { version=(ua.match(/OS (\d+)[_.](\d+)/)||[])[1]||version; device=/iPhone/.test(ua)?"iPhone":"iPad"; os=device==="iPhone"?"iOS":"iPadOS"; }
+    const browserInfo = detect();
+
+    let os = browserInfo?.os || dict[currentLang].unknown;
+    let version = dict[currentLang].unknown;
+    let device = dict[currentLang].unknown;
+
+    if (/Android/.test(ua)) { version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version; device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device; }
+    else if (/iPhone|iPad|iPod/.test(ua)) { version = ((ua.match(/OS ([\d_]+)/) || [])[1] || "").replace(/_/g, ".") || version; device = /iPhone/.test(ua) ? "iPhone" : "iPad"; os = device === "iPhone" ? "iOS" : "iPadOS"; }
     else if (/Windows NT/.test(ua)) { const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; os="Windows"; version=map[ver]||ver||version; device="PC"; }
     else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device="Mac"; }
     else if (/Linux/.test(navigator.platform)) { os="Linux"; device=currentLang==="ja"?"Linux端末":"Linux device"; }
-    let browser=dict[currentLang].unknown,bver=dict[currentLang].unknown;
-    if (/Edg\//.test(ua)) browser="Microsoft Edge", bver=(ua.match(/Edg\/([\d\.]+)/)||[])[1]||bver;
-    else if (/OPR\//.test(ua)) browser="Opera", bver=(ua.match(/OPR\/([\d\.]+)/)||[])[1]||bver;
-    else if (/Chrome\//.test(ua)) browser="Chrome", bver=(ua.match(/Chrome\/([\d\.]+)/)||[])[1]||bver;
-    else if (/Firefox\//.test(ua)) browser="Firefox", bver=(ua.match(/Firefox\/([\d\.]+)/)||[])[1]||bver;
-    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser="Safari", bver=(ua.match(/Version\/([\d\.]+)/)||[])[1]||bver;
-    return { os, version, device, browser, browserVersion:bver };
+
+    const browser = browserInfo?.name || dict[currentLang].unknown;
+    const bver = browserInfo?.version || dict[currentLang].unknown;
+    return { os, version, device, browser, browserVersion: bver };
   }
 
   function getCpuNameByUA() {
