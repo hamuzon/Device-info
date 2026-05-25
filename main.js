@@ -271,6 +271,12 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     return dict[currentLang].unknown;
   }
 
+  function getMemoryEstimate() {
+    if (typeof navigator.deviceMemory !== "number") return dict[currentLang].unknown;
+    const suffix = currentLang === "ja" ? "（推定）" : " (Estimated)";
+    return `${navigator.deviceMemory} GB${suffix}`;
+  }
+
   function getGPUName() {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -368,7 +374,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     ].forEach(([l, v]) => tables.screen.appendChild(createRow(l, v)));
 
     const cpuCores = typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : lang.unknown;
-    const memory = typeof navigator.deviceMemory === "number" ? `${navigator.deviceMemory} GB` : lang.unknown;
+    const memory = getMemoryEstimate();
     const gpuName = getGPUName();
     [
       [lang.cpu, cpuCores],
