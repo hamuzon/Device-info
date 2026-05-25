@@ -29,7 +29,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
       pixelDepth: `<span class="selectable">ピクセル深度</span>`,
       cpu: `<span class="selectable">CPUコア数</span>`,
       cpuName: `<span class="selectable">CPU名</span>`,
-      memory: `<span class="selectable">メモリ：最大 8GBまで</span>`,
+      memory: `<span class="selectable">メモリ</span>`,
       gpu: `<span class="selectable">GPU名</span>`,
       ipv4: `<span class="selectable">IPv4アドレス</span>`,
       ipv6: `<span class="selectable">IPv6アドレス</span>`,
@@ -84,7 +84,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
       pixelDepth: `<span class="selectable">Pixel Depth</span>`,
       cpu: `<span class="selectable">CPU Cores</span>`,
       cpuName: `<span class="selectable">CPU Name</span>`,
-      memory: `<span class="selectable">Memory: Max 8GB</span>`,
+      memory: `<span class="selectable">Memory</span>`,
       gpu: `<span class="selectable">GPU Name</span>`,
       ipv4: `<span class="selectable">IPv4 Address</span>`,
       ipv6: `<span class="selectable">IPv6 Address</span>`,
@@ -368,7 +368,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     ].forEach(([l, v]) => tables.screen.appendChild(createRow(l, v)));
 
     const cpuCores = typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : lang.unknown;
-    const memory = typeof navigator.deviceMemory === "number" ? `${Math.min(navigator.deviceMemory, 8)} GB` : lang.unknown;
+    const memory = typeof navigator.deviceMemory === "number" ? `${navigator.deviceMemory} GB` : lang.unknown;
     const gpuName = getGPUName();
     [
       [lang.cpu, cpuCores],
