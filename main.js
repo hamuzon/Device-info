@@ -252,7 +252,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     } else if (/Windows NT/.test(ua)) {
       const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
       const map = {
-        "10.0": "10",
+        "10.0": "10 / 11",
         "6.3": "8.1",
         "6.2": "8",
         "6.1": "7",
@@ -262,9 +262,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
       os = "Windows";
       version = map[ver] || ver || version;
-      version = ver === "10.0"
-        ? normalizeWindowsVersion(os, ver, ua)
-        : normalizeWindowsVersion(os, version, ua);
+      version = normalizeWindowsVersion(os, version, ua);
       device = "PC";
     } else if (/Mac OS X/.test(ua)) {
       os = "macOS";
