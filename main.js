@@ -182,6 +182,13 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     }, 400);
   }
 
+  function getThemeToggleLabel(lang, modeKey) {
+    const oppositeLang = lang === 'ja' ? 'en' : 'ja';
+    const primaryText = dict[lang][modeKey];
+    const secondaryText = dict[oppositeLang][modeKey];
+    return `${primaryText} / ${secondaryText}`;
+  }
+
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
@@ -419,8 +426,8 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     btnEn.classList.toggle('active', lang === 'en');
     btnJa.setAttribute('aria-pressed', lang === 'ja');
     btnEn.setAttribute('aria-pressed', lang === 'en');
-    btnLight.textContent = `${dict[lang].light} / Light`;
-    btnDark.textContent = `${dict[lang].dark} / Dark`;
+    btnLight.textContent = getThemeToggleLabel(lang, 'light');
+    btnDark.textContent = getThemeToggleLabel(lang, 'dark');
     document.body.setAttribute("lang", lang);
     updateInfo();
   }
