@@ -242,16 +242,26 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     return dict[currentLang].unknown;
   }
 
-  function createRow(label,value){
-    const row=document.createElement('tr');
-    row.innerHTML=`<th scope="row">${label}</th><td>${value||dict[currentLang].unknown}</td>`;
+  function createRow(label, value) {
+    const row = document.createElement("tr");
+    const safeValue = value || dict[currentLang].unknown;
+
+    row.innerHTML = `<th scope="row">${label}</th><td>${safeValue}</td>`;
+
     return row;
   }
 
   async function fetchIPData() {
-    const ipv4 = await fetch('https://api.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const ipv6 = await fetch('https://api6.ipify.org/?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
-    const currentIP = await fetch('https://api64.ipify.org?format=json').then(res=>res.json()).then(d=>d.ip||dict[currentLang].unknown).catch(()=>dict[currentLang].unknown);
+    const fetchIp = (url) =>
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => data.ip || dict[currentLang].unknown)
+        .catch(() => dict[currentLang].unknown);
+
+    const ipv4 = await fetchIp("https://api.ipify.org?format=json");
+    const ipv6 = await fetchIp("https://api6.ipify.org/?format=json");
+    const currentIP = await fetchIp("https://api64.ipify.org?format=json");
+
     return { ipv4, ipv6, currentIP };
   }
 
