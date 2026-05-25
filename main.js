@@ -189,13 +189,37 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     return `${primaryText} / ${secondaryText}`;
   }
 
+
+  function normalizeWindowsVersion(os, version, ua) {
+    if (os !== "Windows") return version;
+
+    if (/Windows 11/i.test(ua || "")) return "11";
+
+    const versionText = String(version);
+    const numericMajor = Number.parseInt(versionText.split(".")[0], 10);
+
+    if (/^10(\.0+)?$/.test(versionText)) return "10 / 11";
+
+    if (Number.isFinite(numericMajor) && numericMajor >= 13) return "11";
+
+    return version;
+  }
+
+  function formatWindowsDisplayVersion(rawVersion, normalizedVersion) {
+    if (normalizedVersion === dict[currentLang].unknown) return normalizedVersion;
+    if (!rawVersion || rawVersion === normalizedVersion) return normalizedVersion;
+    return `${rawVersion} (${normalizedVersion})`;
+  }
+
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
       try {
         const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
         result.os = ch.platform || "";
-        result.version = ch.platformVersion || "";
+        const rawPlatformVersion = ch.platformVersion || "";
+        const normalizedVersion = normalizeWindowsVersion(result.os, rawPlatformVersion, navigator.userAgent);
+        result.version = formatWindowsDisplayVersion(rawPlatformVersion, normalizedVersion);
         result.device = ch.model || "";
         if (navigator.userAgentData.brands?.length) {
           const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
@@ -245,6 +269,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
       os = "Windows";
       version = map[ver] || ver || version;
+      version = normalizeWindowsVersion(os, version, ua);
       device = "PC";
     } else if (/Mac OS X/.test(ua)) {
       os = "macOS";
