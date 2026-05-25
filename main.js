@@ -150,6 +150,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
   let currentLang = localStorage.getItem("lang") || (navigator.language.startsWith("ja") ? "ja" : "en");
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  let updateInfoRequestId = 0;
 
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
@@ -276,11 +277,14 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
   }
 
   async function updateInfo() {
+    const requestId = ++updateInfoRequestId;
     const lang = dict[currentLang];
     Object.values(tables).forEach(tbl=>tbl.innerHTML='');
     const [osch, osua] = await Promise.all([getOsBrowserByUACh(), getOsBrowserByUA()]);
     const ipData = await fetchIPData();
     const batteryData = await updateBattery();
+
+    if (requestId !== updateInfoRequestId) return;
 
     osUaChLabel.innerHTML = lang.os_ch;
     [[lang.os,osch.os||lang.unknown],[lang.version,osch.version||lang.unknown],[lang.device,osch.device||lang.unknown]].forEach(([l,v])=>tables.os_ua_ch.appendChild(createRow(l,v)));
