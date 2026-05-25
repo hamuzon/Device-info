@@ -200,10 +200,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
     if (/^10(\.0+)?$/.test(versionText)) return "10 / 11";
 
-    if (Number.isFinite(numericMajor)) {
-      if (numericMajor >= 13) return "11";
-      if (numericMajor > 0 && numericMajor < 13) return "10";
-    }
+    if (Number.isFinite(numericMajor) && numericMajor >= 13) return "11";
 
     return version;
   }
