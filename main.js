@@ -189,6 +189,19 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     return `${primaryText} / ${secondaryText}`;
   }
 
+
+  function normalizeWindowsVersion(os, version, ua) {
+    if (os !== "Windows") return version;
+
+    if (/Windows 11/i.test(ua || "")) return "11";
+
+    const numeric = Number.parseInt(String(version).split(".")[0], 10);
+    if (Number.isFinite(numeric) && numeric >= 13) return "11";
+    if (/^10(\.0+)?$/.test(String(version))) return "10";
+
+    return version;
+  }
+
   async function getOsBrowserByUACh() {
     const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
     if (navigator.userAgentData?.getHighEntropyValues) {
@@ -196,6 +209,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
         const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
         result.os = ch.platform || "";
         result.version = ch.platformVersion || "";
+        result.version = normalizeWindowsVersion(result.os, result.version, navigator.userAgent);
         result.device = ch.model || "";
         if (navigator.userAgentData.brands?.length) {
           const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
@@ -235,7 +249,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     } else if (/Windows NT/.test(ua)) {
       const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
       const map = {
-        "10.0": "10 / 11",
+        "10.0": "10",
         "6.3": "8.1",
         "6.2": "8",
         "6.1": "7",
@@ -245,6 +259,7 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
       os = "Windows";
       version = map[ver] || ver || version;
+      version = normalizeWindowsVersion(os, version, ua);
       device = "PC";
     } else if (/Mac OS X/.test(ua)) {
       os = "macOS";
