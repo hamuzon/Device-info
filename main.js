@@ -195,9 +195,15 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
     if (/Windows 11/i.test(ua || "")) return "11";
 
-    const numeric = Number.parseInt(String(version).split(".")[0], 10);
-    if (Number.isFinite(numeric) && numeric >= 13) return "11";
-    if (/^10(\.0+)?$/.test(String(version))) return "10";
+    const versionText = String(version);
+    const numericMajor = Number.parseInt(versionText.split(".")[0], 10);
+
+    if (/^10(\.0+)?$/.test(versionText)) return "10 / 11";
+
+    if (Number.isFinite(numericMajor)) {
+      if (numericMajor >= 13) return "11";
+      if (numericMajor > 0 && numericMajor < 13) return "10";
+    }
 
     return version;
   }
@@ -259,7 +265,9 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
       os = "Windows";
       version = map[ver] || ver || version;
-      version = normalizeWindowsVersion(os, version, ua);
+      version = ver === "10.0"
+        ? normalizeWindowsVersion(os, ver, ua)
+        : normalizeWindowsVersion(os, version, ua);
       device = "PC";
     } else if (/Mac OS X/.test(ua)) {
       os = "macOS";
