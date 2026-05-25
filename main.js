@@ -176,14 +176,50 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
     let version = dict[currentLang].unknown;
     let device = dict[currentLang].unknown;
 
-    if (/Android/.test(ua)) { version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version; device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device; }
-    else if (/iPhone|iPad|iPod/.test(ua)) { version = ((ua.match(/OS ([\d_]+)/) || [])[1] || "").replace(/_/g, ".") || version; device = /iPhone/.test(ua) ? "iPhone" : "iPad"; os = device === "iPhone" ? "iOS" : "iPadOS"; }
-    else if (/Windows NT/.test(ua)) { const ver=(ua.match(/Windows NT ([\d.]+)/)||[])[1]; const map={"10.0":"10 / 11","6.3":"8.1","6.2":"8","6.1":"7","6.0":"Vista","5.1":"XP"}; os="Windows"; version=map[ver]||ver||version; device="PC"; }
-    else if (/Mac OS X/.test(ua)) { os="macOS"; version=(ua.match(/Mac OS X (\d+[_\.]\d+)/)||[])[1]?.replace(/_/g,".")||version; device="Mac"; }
-    else if (/Linux/.test(navigator.platform)) { os="Linux"; device=currentLang==="ja"?"Linux端末":"Linux device"; }
+    if (/Android/.test(ua)) {
+      os = "Android";
+      version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version;
+      device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device;
+    } else if (/iPhone|iPad|iPod/.test(ua)) {
+      const iosVersion = (ua.match(/OS\s([\d_]+)/) || [])[1];
+      version = (iosVersion || "").replace(/_/g, ".") || version;
+
+      if (/iPad/.test(ua)) {
+        device = "iPad";
+        os = "iPadOS";
+      } else if (/iPod/.test(ua)) {
+        device = "iPod";
+        os = "iOS";
+      } else {
+        device = "iPhone";
+        os = "iOS";
+      }
+    } else if (/Windows NT/.test(ua)) {
+      const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
+      const map = {
+        "10.0": "10 / 11",
+        "6.3": "8.1",
+        "6.2": "8",
+        "6.1": "7",
+        "6.0": "Vista",
+        "5.1": "XP"
+      };
+
+      os = "Windows";
+      version = map[ver] || ver || version;
+      device = "PC";
+    } else if (/Mac OS X/.test(ua)) {
+      os = "macOS";
+      version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || version;
+      device = "Mac";
+    } else if (/Linux/.test(navigator.platform)) {
+      os = "Linux";
+      device = currentLang === "ja" ? "Linux端末" : "Linux device";
+    }
 
     const browser = browserInfo?.name || dict[currentLang].unknown;
     const bver = browserInfo?.version || dict[currentLang].unknown;
+
     return { os, version, device, browser, browserVersion: bver };
   }
 
