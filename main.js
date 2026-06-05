@@ -54,7 +54,7 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
           <a href="https://developer.mozilla.org/ja/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
           <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>,
-          <a href="https://www.npmjs.com/package/detect-browser" target="_blank" rel="noopener noreferrer">detect-browser</a>`
+          <a href="https://www.npmjs.com/package/node-device-detector" target="_blank" rel="noopener noreferrer">node-device-detector</a>`
       }
     },
     en: {
@@ -107,9 +107,9 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
         library: `Libraries used: 
           <a href="https://www.ipify.org/" target="_blank" rel="noopener noreferrer">ipify API</a>,
           <a href="https://developer.mozilla.org/en-US/docs/Web/API/Device_Memory_API" target="_blank" rel="noopener noreferrer">Device Memory API</a>,
-          <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
+          <a href="https://developer.mozilla.org/ja/docs/Web/API" target="_blank" rel="noopener noreferrer">Web API</a>,
           <a href="https://wicg.github.io/ua-client-hints/" target="_blank" rel="noopener noreferrer">UA Client Hints</a>,
-          <a href="https://www.npmjs.com/package/detect-browser" target="_blank" rel="noopener noreferrer">detect-browser</a>`
+          <a href="https://www.npmjs.com/package/node-device-detector" target="_blank" rel="noopener noreferrer">node-device-detector</a>`
       }
     }
   };
