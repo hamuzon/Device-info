@@ -1,4 +1,4 @@
-import { detect } from "https://esm.sh/detect-browser@5.3.0";
+import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
 
 (function() {
   const dict = {
@@ -120,6 +120,12 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
   const btnLight = document.getElementById('btn-light');
   const btnDark = document.getElementById('btn-dark');
   const favicon = document.getElementById('favicon');
+  const deviceDetector = new DeviceDetector({
+    clientIndexes: true,
+    osIndexes: true,
+    deviceIndexes: true,
+    maxUserAgentSize: 500
+  });
   const footerCopyright = document.getElementById('footer-copyright');
   const footerWarning = document.getElementById('footer-warning');
   const footerLibrary = document.getElementById('footer-library');
@@ -232,58 +238,74 @@ import { detect } from "https://esm.sh/detect-browser@5.3.0";
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
-    const browserInfo = detect();
-
-    let os = browserInfo?.os || dict[currentLang].unknown;
+    let os = dict[currentLang].unknown;
     let version = dict[currentLang].unknown;
     let device = dict[currentLang].unknown;
+    let browser = dict[currentLang].unknown;
+    let browserVersion = dict[currentLang].unknown;
 
-    if (/Android/.test(ua)) {
-      os = "Android";
-      version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version;
-      device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device;
-    } else if (/iPhone|iPad|iPod/.test(ua)) {
-      const iosVersion = (ua.match(/OS\s([\d_]+)/) || [])[1];
-      version = (iosVersion || "").replace(/_/g, ".") || version;
-
-      if (/iPad/.test(ua)) {
-        device = "iPad";
-        os = "iPadOS";
-      } else if (/iPod/.test(ua)) {
-        device = "iPod";
-        os = "iOS";
-      } else {
-        device = "iPhone";
-        os = "iOS";
+    try {
+      const result = deviceDetector.detect(ua);
+      if (result?.os?.name) {
+        os = result.os.name;
+        version = result.os.version || dict[currentLang].unknown;
       }
-    } else if (/Windows NT/.test(ua)) {
-      const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
-      const map = {
-        "10.0": "10 / 11",
-        "6.3": "8.1",
-        "6.2": "8",
-        "6.1": "7",
-        "6.0": "Vista",
-        "5.1": "XP"
-      };
-
-      os = "Windows";
-      version = map[ver] || ver || version;
-      version = normalizeWindowsVersion(os, version, ua);
-      device = "PC";
-    } else if (/Mac OS X/.test(ua)) {
-      os = "macOS";
-      version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || version;
-      device = "Mac";
-    } else if (/Linux/.test(navigator.platform)) {
-      os = "Linux";
-      device = currentLang === "ja" ? "Linux端末" : "Linux device";
+      if (result?.client?.name) {
+        browser = result.client.name;
+        browserVersion = result.client.version || dict[currentLang].unknown;
+      }
+      if (result?.device?.brand || result?.device?.model) {
+        device = [result.device.brand, result.device.model].filter(Boolean).join(' ').trim();
+      }
+    } catch (e) {
+      // ignore and fallback to regex parsing
     }
 
-    const browser = browserInfo?.name || dict[currentLang].unknown;
-    const bver = browserInfo?.version || dict[currentLang].unknown;
+    if (os === dict[currentLang].unknown) {
+      if (/Android/.test(ua)) {
+        os = "Android";
+        version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version;
+        device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device;
+      } else if (/iPhone|iPad|iPod/.test(ua)) {
+        const iosVersion = (ua.match(/OS\s([\d_]+)/) || [])[1];
+        version = (iosVersion || "").replace(/_/g, ".") || version;
 
-    return { os, version, device, browser, browserVersion: bver };
+        if (/iPad/.test(ua)) {
+          device = "iPad";
+          os = "iPadOS";
+        } else if (/iPod/.test(ua)) {
+          device = "iPod";
+          os = "iOS";
+        } else {
+          device = "iPhone";
+          os = "iOS";
+        }
+      } else if (/Windows NT/.test(ua)) {
+        const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
+        const map = {
+          "10.0": "10 / 11",
+          "6.3": "8.1",
+          "6.2": "8",
+          "6.1": "7",
+          "6.0": "Vista",
+          "5.1": "XP"
+        };
+
+        os = "Windows";
+        version = map[ver] || ver || version;
+        version = normalizeWindowsVersion(os, version, ua);
+        device = "PC";
+      } else if (/Mac OS X/.test(ua)) {
+        os = "macOS";
+        version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || version;
+        device = "Mac";
+      } else if (/Linux/.test(navigator.platform)) {
+        os = "Linux";
+        device = currentLang === "ja" ? "Linux端末" : "Linux device";
+      }
+    }
+
+    return { os, version, device, browser, browserVersion };
   }
 
   function getCpuNameByUA() {
