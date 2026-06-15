@@ -44,6 +44,8 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
       unknown: `<span class="selectable">不明</span>`,
       online_yes: `<span class="selectable">オンライン</span>`,
       online_no: `<span class="selectable">オフライン</span>`,
+      charging_yes: `<span class="selectable">充電中</span>`,
+      charging_no: `<span class="selectable">放電中</span>`,
       light: "ライト",
       dark: "ダーク",
       footer: {
@@ -99,6 +101,8 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
       unknown: `<span class="selectable">Unknown</span>`,
       online_yes: `<span class="selectable">Online</span>`,
       online_no: `<span class="selectable">Offline</span>`,
+      charging_yes: `<span class="selectable">Charging</span>`,
+      charging_no: `<span class="selectable">Not Charging</span>`,
       light: "Light",
       dark: "Dark",
       footer: {
@@ -158,6 +162,7 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
   let darkMode = localStorage.getItem("mode") === "dark" || (localStorage.getItem("mode") === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
   let updateInfoRequestId = 0;
   let loadingAnimationTimer = null;
+  let batteryInstance = null;
 
   function stopLoadingAnimation() {
     if (!loadingAnimationTimer) return;
@@ -356,15 +361,39 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
     return { ipv4, ipv6, currentIP };
   }
 
+  function syncBatteryStatus(battery) {
+    if (!battery) return;
+    const lang = dict[currentLang];
+    const levelStr = `${Math.round(battery.level * 100)}%`;
+    const chargingStr = battery.charging ? lang.charging_yes : lang.charging_no;
+
+    const rows = tables.battery.querySelectorAll('tr');
+    const levelLabel = lang.batteryLevel.replace(/<[^>]+>/g, '');
+    const chargingLabel = lang.batteryCharging.replace(/<[^>]+>/g, '');
+
+    for (const row of rows) {
+      const label = row.firstElementChild?.textContent;
+      if (label === levelLabel) {
+        row.lastElementChild.innerHTML = levelStr;
+      } else if (label === chargingLabel) {
+        row.lastElementChild.innerHTML = chargingStr;
+      }
+    }
+  }
+
   async function updateBattery() {
     if (!navigator.getBattery) {
       return { level: dict[currentLang].unknown, charging: dict[currentLang].unknown };
     }
 
     try {
-      const battery = await navigator.getBattery();
-      const level = `${Math.round(battery.level * 100)}%`;
-      const charging = battery.charging ? dict[currentLang].online_yes : dict[currentLang].online_no;
+      if (!batteryInstance) {
+        batteryInstance = await navigator.getBattery();
+        batteryInstance.addEventListener('chargingchange', () => syncBatteryStatus(batteryInstance));
+        batteryInstance.addEventListener('levelchange', () => syncBatteryStatus(batteryInstance));
+      }
+      const level = `${Math.round(batteryInstance.level * 100)}%`;
+      const charging = batteryInstance.charging ? dict[currentLang].charging_yes : dict[currentLang].charging_no;
       return { level, charging };
     } catch (e) {
       return { level: dict[currentLang].unknown, charging: dict[currentLang].unknown };
