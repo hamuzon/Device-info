@@ -1,6 +1,6 @@
 import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
 
-(function() {
+(function () {
   const dict = {
     ja: {
       title: "デバイス情報",
@@ -223,26 +223,29 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
   }
 
   async function getOsBrowserByUACh() {
-  const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
-  if (navigator.userAgentData?.getHighEntropyValues) {
-    try {
-      const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
-      result.os = ch.platform || "";
-      let rawPlatformVersion = ch.platformVersion || "";
-      if (!rawPlatformVersion && /Android/.test(navigator.userAgent)) {
-        rawPlatformVersion = (navigator.userAgent.match(/Android\s+([\d.]+)/) || [])[1] || "";
-      }
-      const normalizedVersion = normalizeWindowsVersion(result.os, rawPlatformVersion, navigator.userAgent);
-      result.version = formatWindowsDisplayVersion(rawPlatformVersion, normalizedVersion);
-      result.device = ch.model || "";
-      if (navigator.userAgentData.brands?.length) {
-        const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
-        if (b) { result.browser = b.brand; result.browserVersion = b.version; }
-      }
-    } catch(e){}
+    const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
+    if (navigator.userAgentData?.getHighEntropyValues) {
+      try {
+        const ch = await navigator.userAgentData.getHighEntropyValues(["platform", "platformVersion", "model", "uaFullVersion"]);
+        result.os = ch.platform || "";
+        const rawPlatformVersion = ch.platformVersion || "";
+        const normalizedVersion = normalizeWindowsVersion(result.os, rawPlatformVersion, navigator.userAgent);
+        result.version = formatWindowsDisplayVersion(rawPlatformVersion, normalizedVersion);
+        if (result.os === "Android" && (!result.version || result.version === dict[currentLang].unknown)) {
+          const uaVersionMatch = navigator.userAgent.match(/Android\s+([\d.]+)/);
+          if (uaVersionMatch) {
+            result.version = uaVersionMatch[1];
+          }
+        }
+        result.device = ch.model || "";
+        if (navigator.userAgentData.brands?.length) {
+          const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
+          if (b) { result.browser = b.brand; result.browserVersion = b.version; }
+        }
+      } catch (e) { }
+    }
+    return result;
   }
-  return result;
-}
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
@@ -318,11 +321,11 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
 
   function getCpuNameByUA() {
     const ua = navigator.userAgent;
-    if (/arm|aarch64/i.test(ua)) return currentLang==="ja"?`ARM (推定)`:`ARM (Estimated)`;
-    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang==="ja"?`x64 (推定)`:`x64 (Estimated)`;
-    if (/i686|i386|x86/i.test(ua)) return currentLang==="ja"?`x86 (推定)`:`x86 (Estimated)`;
-    if (/PPC|PowerPC/i.test(ua)) return currentLang==="ja"?`PowerPC (推定)`:`PowerPC (Estimated)`;
-    if (/mips/i.test(ua)) return currentLang==="ja"?`MIPS (推定)`:`MIPS (Estimated)`;
+    if (/arm|aarch64/i.test(ua)) return currentLang === "ja" ? `ARM (推定)` : `ARM (Estimated)`;
+    if (/x86_64|Win64|WOW64|amd64/i.test(ua)) return currentLang === "ja" ? `x64 (推定)` : `x64 (Estimated)`;
+    if (/i686|i386|x86/i.test(ua)) return currentLang === "ja" ? `x86 (推定)` : `x86 (Estimated)`;
+    if (/PPC|PowerPC/i.test(ua)) return currentLang === "ja" ? `PowerPC (推定)` : `PowerPC (Estimated)`;
+    if (/mips/i.test(ua)) return currentLang === "ja" ? `MIPS (推定)` : `MIPS (Estimated)`;
     return dict[currentLang].unknown;
   }
 
@@ -548,7 +551,7 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
   setLang(currentLang);
   setInterval(updateCurrentTime, 1000);
 
-  (function() {
+  (function () {
     const siteConfig = {
       "hamuzon.github.io": { baseYear: 2025, user: "@hamuzon", link: "https://hamuzon.github.io" },
       "hamusata.f5.si": { baseYear: 2025, user: "@hamusata", link: "https://hamusata.f5.si" },
