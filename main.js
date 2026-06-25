@@ -249,67 +249,58 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
-    let os = dict[currentLang].unknown;
-    let version = dict[currentLang].unknown;
-    let device = dict[currentLang].unknown;
-    let browser = dict[currentLang].unknown;
-    let browserVersion = dict[currentLang].unknown;
+    const lang = dict[currentLang];
+    let os = lang.unknown;
+    let version = lang.unknown;
+    let device = lang.unknown;
+    let browser = lang.unknown;
+    let browserVersion = lang.unknown;
 
     try {
       const result = deviceDetector.detect(ua);
-      if (result?.os?.name) {
-        os = result.os.name;
-        version = result.os.version || dict[currentLang].unknown;
-      }
       if (result?.client?.name) {
         browser = result.client.name;
-        browserVersion = result.client.version || dict[currentLang].unknown;
+        browserVersion = result.client.version || lang.unknown;
       }
       if (result?.device?.brand || result?.device?.model) {
         device = [result.device.brand, result.device.model].filter(Boolean).join(' ').trim();
       }
-    } catch (e) {
-      // ignore and fallback to regex parsing
-    }
-
-    if (os === dict[currentLang].unknown) {
-      if (/Android/.test(ua)) {
+      // Prioritize Android detection via UA
+      if (/Android/i.test(ua)) {
         os = "Android";
-        version = (ua.match(/Android\s+([\d.]+)/) || [])[1] || version;
-        device = (ua.match(/;\s?([^;\/]+)\s+Build/i) || [])[1] || device;
-      } else if (/iPhone|iPad|iPod/.test(ua)) {
-        const iosVersion = (ua.match(/OS\s([\d_]+)/) || [])[1];
-        version = (iosVersion || "").replace(/_/g, ".") || version;
-
-        if (/iPad/.test(ua)) {
-          device = "iPad";
-          os = "iPadOS";
-        } else if (/iPod/.test(ua)) {
-          device = "iPod";
-          os = "iOS";
-        } else {
-          device = "iPhone";
-          os = "iOS";
+        version = ua.match(/Android\s+([\d.]+)/i)?.[1] || lang.unknown;
+        if (device === lang.unknown) {
+            device = ua.match(/;\s?([^;]+?)\s+(Build|wv[)]|MiuiBrowser)/i)?.[1] || lang.unknown;
         }
-      } else if (/Windows NT/.test(ua)) {
-        const ver = (ua.match(/Windows NT ([\d.]+)/) || [])[1];
+      } else if (result?.os?.name) {
+        os = result.os.name;
+        version = result.os.version || lang.unknown;
+      }
+    } catch (e) { /* ignore deviceDetector errors */ }
+
+    if (os === lang.unknown) {
+      if (/iPhone|iPad|iPod/i.test(ua)) {
+        os = /iPad/i.test(ua) ? "iPadOS" : "iOS";
+        device = ua.match(/iPhone|iPad|iPod/i)[0];
+        version = ua.match(/OS\s([\d_]+)/i)?.[1].replace(/_/g, '.') || lang.unknown;
+      } else if (/Windows NT/i.test(ua)) {
+        os = "Windows";
+        device = "PC";
+        const ver = ua.match(/Windows NT ([\d.]+)/i)?.[1];
         const map = {
           "10.0": "10 / 11",
           "6.3": "8.1",
           "6.2": "8",
           "6.1": "7",
           "6.0": "Vista",
-          "5.1": "XP"
+          "5.1": "XP",
         };
-
-        os = "Windows";
-        version = map[ver] || ver || version;
+        version = map[ver] || ver || lang.unknown;
         version = normalizeWindowsVersion(os, version, ua);
-        device = "PC";
-      } else if (/Mac OS X/.test(ua)) {
+      } else if (/Mac OS X/i.test(ua)) {
         os = "macOS";
-        version = (ua.match(/Mac OS X (\d+[_\.]\d+)/) || [])[1]?.replace(/_/g, ".") || version;
         device = "Mac";
+        version = ua.match(/Mac OS X (\d+([_.]\d+)*)/i)?.[1].replace(/_/g, '.') || lang.unknown;
       } else if (/Linux/.test(navigator.platform)) {
         os = "Linux";
         device = currentLang === "ja" ? "Linux端末" : "Linux device";
