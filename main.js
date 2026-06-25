@@ -223,23 +223,26 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
   }
 
   async function getOsBrowserByUACh() {
-    const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
-    if (navigator.userAgentData?.getHighEntropyValues) {
-      try {
-        const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
-        result.os = ch.platform || "";
-        const rawPlatformVersion = ch.platformVersion || "";
-        const normalizedVersion = normalizeWindowsVersion(result.os, rawPlatformVersion, navigator.userAgent);
-        result.version = formatWindowsDisplayVersion(rawPlatformVersion, normalizedVersion);
-        result.device = ch.model || "";
-        if (navigator.userAgentData.brands?.length) {
-          const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
-          if (b) { result.browser = b.brand; result.browserVersion = b.version; }
-        }
-      } catch(e){}
-    }
-    return result;
+  const result = { os: "", version: "", device: "", browser: "", browserVersion: "" };
+  if (navigator.userAgentData?.getHighEntropyValues) {
+    try {
+      const ch = await navigator.userAgentData.getHighEntropyValues(["platform","platformVersion","model","uaFullVersion"]);
+      result.os = ch.platform || "";
+      let rawPlatformVersion = ch.platformVersion || "";
+      if (!rawPlatformVersion && /Android/.test(navigator.userAgent)) {
+        rawPlatformVersion = (navigator.userAgent.match(/Android\s+([\d.]+)/) || [])[1] || "";
+      }
+      const normalizedVersion = normalizeWindowsVersion(result.os, rawPlatformVersion, navigator.userAgent);
+      result.version = formatWindowsDisplayVersion(rawPlatformVersion, normalizedVersion);
+      result.device = ch.model || "";
+      if (navigator.userAgentData.brands?.length) {
+        const b = navigator.userAgentData.brands.find(x => !/Not.?A.?Brand/i.test(x.brand));
+        if (b) { result.browser = b.brand; result.browserVersion = b.version; }
+      }
+    } catch(e){}
   }
+  return result;
+}
 
   function getOsBrowserByUA() {
     const ua = navigator.userAgent;
