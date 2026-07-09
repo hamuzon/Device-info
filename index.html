@@ -1,23 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Device-info</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="Device-info ページ。端末情報をブラウザから取得して表示します。">
-  <meta property="og:title" content="Device-info">
-  <meta property="og:description" content="Device-info ページ。端末情報をブラウザから取得して表示します。">
+  <title>Device-info | OS・ブラウザ・CPU・GPU・IPアドレスなどの端末情報を確認</title>
+
+  <meta name="description" content="ブラウザから取得できるOS・ブラウザ・画面解像度・CPU・GPU・メモリ・IPアドレス・バッテリー・ネットワークなどの端末情報を一覧でわかりやすく表示します。">
+
+  <meta name="keywords" content="Device-info,device info,device information,デバイス情報,端末情報,システム情報,環境情報,PC情報,スマホ情報,Android,iPhone,iPad,Windows,macOS,Linux,Chrome,Edge,Firefox,Safari,Opera,OS,OS情報,OS確認,OSバージョン,ブラウザ,ブラウザ情報,ブラウザ確認,ブラウザバージョン,User-Agent,UA,UA-CH,UA Client Hints,User Agent Parser,node-device-detector,CPU,CPU情報,CPU確認,CPUコア数,CPUスレッド数,GPU,GPU情報,GPU確認,GPUレンダラー,WebGL,OpenGL,メモリ,RAM,Device Memory,ハードウェア,スペック,スペック確認,画面情報,画面サイズ,画面解像度,スクリーン解像度,Viewport,ビューポート,色深度,Pixel Depth,ピクセル深度,IPアドレス,IP確認,IPv4,IPv6,グローバルIP,ネットワーク情報,オンライン状態,インターネット接続,バッテリー,バッテリー情報,バッテリー残量,充電状態,ブラウザ言語,言語設定,タイムゾーン,現在時刻,取得時刻,Web API,JavaScript,HTML5,ブラウザAPI,Device Memory API,Battery Status API,Navigator API,Screen API,Web開発,Web制作,開発者向け,デバッグ,ブラウザ診断,端末診断,システム診断,環境確認,ブラウザテスト,端末チェック,デバイスチェック,ブラウザチェック,システムチェック,device detector,browser detector,system information,hardware information,browser information,device checker,browser checker,screen resolution,viewport size,IP address,battery status">
+
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="author" content="@hamusata">
+  <meta name="theme-color" content="#0f172a">
+
+  <link rel="canonical" href="https://device-info.hamusata.f5.si/">
+
+  <meta property="og:title" content="Device-info | 端末情報をブラウザで確認">
+  <meta property="og:description" content="OS・ブラウザ・画面解像度・CPU・GPU・メモリ・IPアドレス・バッテリーなどの端末情報をブラウザから確認できます。">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://device-info.hamusata.f5.si">
+  <meta property="og:url" content="https://device-info.hamusata.f5.si/">
+  <meta property="og:site_name" content="Device-info">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:image" content="https://device-info.hamusata.f5.si/og.png">
+
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Device-info">
-  <meta name="twitter:description" content="Device-info ページ。端末情報をブラウザから取得して表示します。">
+  <meta name="twitter:title" content="Device-info | 端末情報をブラウザで確認">
+  <meta name="twitter:description" content="OS・ブラウザ・画面解像度・CPU・GPU・メモリ・IPアドレス・バッテリーなどの端末情報をブラウザから確認できます。">
+  <meta name="twitter:image" content="https://device-info.hamusata.f5.si/og.png">
+
   <link id="favicon" rel="icon" type="image/png" href="icon-dark.png">
   <link id="favicon-light" rel="icon" type="image/png" href="icon-light.png" media="(prefers-color-scheme: light)">
 
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <h1 id="title">Device-info</h1>
 
