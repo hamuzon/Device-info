@@ -1,4 +1,4 @@
-import DeviceDetector from "https://esm.sh/node-device-detector@2.2.6";
+import DeviceDetector from "https://esm.sh/node-device-detector@2.2.5";
 
 (function () {
   const dict = {
