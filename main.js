@@ -557,7 +557,7 @@ import DeviceDetector from "https://esm.sh/node-device-detector@2.2.7";
     const host = window.location.hostname;
     const config = siteConfig[host] || siteConfig["default"];
     const currentYear = new Date().getFullYear();
-    const yearText = currentYear > config.baseYear ? `${config.baseYear}~${currentYear}` : `${config.baseYear}`;
+    const yearText = currentYear > config.baseYear ? `${config.baseYear} ~ ${currentYear}` : `${config.baseYear}`;
     if (footerCopyright) {
       if (config.link) {
         footerCopyright.innerHTML = `&copy; ${yearText} <a href="${config.link}" target="_blank" rel="noopener noreferrer">${config.user}</a> device-info`;
