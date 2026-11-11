@@ -32,48 +32,37 @@ jobs:
       GA_MEASUREMENT_ID: G-F8HVYVW05H
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           ref: 'main'
 
       - name: Setup Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@v5
 
-      - name: Inject Google Analytics and normalize hostnames
+      - name: Inject Google Analytics 4
         run: |
-          find . -type f -name "*.html" -not -name "google*.html" -not -path "./.git/*" \
+          # google*.html を除外し、既存GA4タグがないHTMLに挿入
+          find . -type f -name "*.html" -not -name "google*.html" \
             -exec sh -c '
-              set -e
               for file do
-                insert=$(mktemp)
                 if ! grep -q "googletagmanager.com/gtag/js" "$file"; then
-                  cat >> "$insert" <<EOF
-          <!-- Google tag (gtag.js) -->
-          <script async src="https://www.googletagmanager.com/gtag/js?id=$GA_MEASUREMENT_ID"></script>
-          <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag("js", new Date());
-          gtag("config", "$GA_MEASUREMENT_ID");
-          </script>
-          EOF
+                  sed -i "/<head[^>]*>/a\\
+          <!-- Google tag (gtag.js) -->\\
+          <script async src=\"https://www.googletagmanager.com/gtag/js?id=$GA_MEASUREMENT_ID\"></script>\\
+          <script>\\
+          window.dataLayer = window.dataLayer || [];\\
+          function gtag(){dataLayer.push(arguments);}\\
+          gtag(\"js\", new Date());\\
+          gtag(\"config\", \"$GA_MEASUREMENT_ID\");\\
+          </script>" "$file"
                 fi
-                if ! grep -q "hostname.endsWith" "$file"; then
-                  cat >> "$insert" <<EOF
-          <script>if(window.location.hostname.endsWith(".")){var url=new URL(window.location.href);url.hostname=url.hostname.slice(0,-1);window.location.replace(url.href);}</script>
-          EOF
-                fi
-                if [ -s "$insert" ]; then
-                  if ! grep -qiE "<head[^>]*>" "$file"; then
-                    echo "No <head> element found in $file" >&2
-                    rm -f "$insert"
-                    exit 1
-                  fi
-                  sed -i "/<[hH][eE][aA][dD][^>]*>/r $insert" "$file"
-                fi
-                rm -f "$insert"
               done
             ' sh {} +
+
+      - name: Inject FQDN normalization script
+        run: |
+          # 全てのHTMLファイルの<head>直後に挿入
+          find . -type f -name "*.html" -not -name "google*.html" -exec sed -i '/<head[^>]*>/a \  <script>if(window.location.hostname.endsWith(".")){window.location.replace(window.location.href.replace(window.location.hostname,window.location.hostname.slice(0,-1)));}</script>' {} +
 
       - name: Remove sensitive files from deployment artifact
         run: |
@@ -81,11 +70,11 @@ jobs:
           rm -rf functions README.md README readme.md license LICENSE LICENSE.txt _redirects.md _redirects
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
           path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
