@@ -39,30 +39,60 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
-      - name: Inject Google Analytics 4
+      - name: Inject Google Analytics and normalize hostnames
         run: |
-          # google*.html を除外し、既存GA4タグがないHTMLに挿入
-          find . -maxdepth 1 -type f -name "*.html" -not -name "google*.html" \
-            -exec sh -c '
-              for file do
-                if ! grep -q "googletagmanager.com/gtag/js" "$file"; then
-                  sed -i "/<head[^>]*>/a\\
-          <!-- Google tag (gtag.js) -->\\
-          <script async src=\"https://www.googletagmanager.com/gtag/js?id=$GA_MEASUREMENT_ID\"></script>\\
-          <script>\\
-          window.dataLayer = window.dataLayer || [];\\
-          function gtag(){dataLayer.push(arguments);}\\
-          gtag(\"js\", new Date());\\
-          gtag(\"config\", \"$GA_MEASUREMENT_ID\");\\
-          </script>" "$file"
-                fi
-              done
-            ' sh {} +
+          python3 <<'PY'
+          import os
+          import re
+          from pathlib import Path
 
-      - name: Inject FQDN normalization script
-        run: |
-          # 全てのHTMLファイルの<head>直後に挿入
-          find . -maxdepth 1 -type f -name "*.html" -not -name "google*.html" -exec sed -i '/<head[^>]*>/a \  <script>if(window.location.hostname.endsWith(".")){window.location.replace(window.location.href.replace(window.location.hostname,window.location.hostname.slice(0,-1)));}</script>' {} +
+          measurement_id = os.environ["GA_MEASUREMENT_ID"]
+          head_pattern = re.compile(r"<head\b[^>]*>", re.IGNORECASE)
+
+          analytics = f"""<!-- Google tag (gtag.js) -->
+          <script async src="https://www.googletagmanager.com/gtag/js?id={measurement_id}"></script>
+          <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){{dataLayer.push(arguments);}}
+          gtag("js", new Date());
+          gtag("config", "{measurement_id}");
+          </script>"""
+          hostname_normalization = """<script>
+          if (window.location.hostname.endsWith(".")) {
+            const url = new URL(window.location.href);
+            url.hostname = url.hostname.slice(0, -1);
+            window.location.replace(url.href);
+          }
+          </script>"""
+
+          for path in sorted(Path(".").rglob("*.html")):
+              if ".git" in path.parts or path.name.lower().startswith("google"):
+                  continue
+
+              with path.open(encoding="utf-8", newline="") as html_file:
+                  content = html_file.read()
+
+              additions = []
+              if "googletagmanager.com/gtag/js" not in content:
+                  additions.append(analytics)
+              if "hostname.endsWith(\".\")" not in content:
+                  additions.append(hostname_normalization)
+              if not additions:
+                  continue
+
+              head_match = head_pattern.search(content)
+              if head_match is None:
+                  raise ValueError(f"No <head> element found in {path}")
+
+              insertion = "\n" + "\n".join(additions)
+              content = (
+                  content[:head_match.end()]
+                  + insertion
+                  + content[head_match.end():]
+              )
+              with path.open("w", encoding="utf-8", newline="") as html_file:
+                  html_file.write(content)
+          PY
 
       - name: Remove sensitive files from deployment artifact
         run: |
