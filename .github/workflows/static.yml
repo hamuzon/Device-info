@@ -41,58 +41,39 @@ jobs:
 
       - name: Inject Google Analytics and normalize hostnames
         run: |
-          python3 <<'PY'
-          import os
-          import re
-          from pathlib import Path
-
-          measurement_id = os.environ["GA_MEASUREMENT_ID"]
-          head_pattern = re.compile(r"<head\b[^>]*>", re.IGNORECASE)
-
-          analytics = f"""<!-- Google tag (gtag.js) -->
-          <script async src="https://www.googletagmanager.com/gtag/js?id={measurement_id}"></script>
+          find . -type f -name "*.html" -not -name "google*.html" -not -path "./.git/*" \
+            -exec sh -c '
+              set -e
+              for file do
+                insert=$(mktemp)
+                if ! grep -q "googletagmanager.com/gtag/js" "$file"; then
+                  cat >> "$insert" <<EOF
+          <!-- Google tag (gtag.js) -->
+          <script async src="https://www.googletagmanager.com/gtag/js?id=$GA_MEASUREMENT_ID"></script>
           <script>
           window.dataLayer = window.dataLayer || [];
-          function gtag(){{dataLayer.push(arguments);}}
+          function gtag(){dataLayer.push(arguments);}
           gtag("js", new Date());
-          gtag("config", "{measurement_id}");
-          </script>"""
-          hostname_normalization = """<script>
-          if (window.location.hostname.endsWith(".")) {
-            const url = new URL(window.location.href);
-            url.hostname = url.hostname.slice(0, -1);
-            window.location.replace(url.href);
-          }
-          </script>"""
-
-          for path in sorted(Path(".").rglob("*.html")):
-              if ".git" in path.parts or path.name.lower().startswith("google"):
-                  continue
-
-              with path.open(encoding="utf-8", newline="") as html_file:
-                  content = html_file.read()
-
-              additions = []
-              if "googletagmanager.com/gtag/js" not in content:
-                  additions.append(analytics)
-              if "hostname.endsWith(\".\")" not in content:
-                  additions.append(hostname_normalization)
-              if not additions:
-                  continue
-
-              head_match = head_pattern.search(content)
-              if head_match is None:
-                  raise ValueError(f"No <head> element found in {path}")
-
-              insertion = "\n" + "\n".join(additions)
-              content = (
-                  content[:head_match.end()]
-                  + insertion
-                  + content[head_match.end():]
-              )
-              with path.open("w", encoding="utf-8", newline="") as html_file:
-                  html_file.write(content)
-          PY
+          gtag("config", "$GA_MEASUREMENT_ID");
+          </script>
+          EOF
+                fi
+                if ! grep -q "hostname.endsWith" "$file"; then
+                  cat >> "$insert" <<EOF
+          <script>if(window.location.hostname.endsWith(".")){var url=new URL(window.location.href);url.hostname=url.hostname.slice(0,-1);window.location.replace(url.href);}</script>
+          EOF
+                fi
+                if [ -s "$insert" ]; then
+                  if ! grep -qiE "<head[^>]*>" "$file"; then
+                    echo "No <head> element found in $file" >&2
+                    rm -f "$insert"
+                    exit 1
+                  fi
+                  sed -i "/<[hH][eE][aA][dD][^>]*>/r $insert" "$file"
+                fi
+                rm -f "$insert"
+              done
+            ' sh {} +
 
       - name: Remove sensitive files from deployment artifact
         run: |
